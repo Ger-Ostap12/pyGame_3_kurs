@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Dict, Tuple
 
 import pygame
 
-from .states import GameState
+from .states import (
+    BaseState,
+    GameStateId,
+    MenuState,
+    PlayingState,
+    GameOverState,
+)
 
 
 class Game:
@@ -21,65 +27,75 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = False
-        self.state = GameState.MENU
 
-        # Шрифт для вывода FPS и текста (пока один общий)
         self.font = pygame.font.SysFont("consolas", 18)
-
-        # Цвета
         self.bg_color = pygame.Color("black")
         self.text_color = pygame.Color("white")
 
+        # FSM: словарь состояний + текущее состояние
+        self._states: Dict[GameStateId, BaseState] = {}
+        self._current_state: BaseState | None = None
+        self._init_states()
+
+    # --- управление состояниями ---
+
+    def _init_states(self) -> None:
+        self._states = {
+            GameStateId.MENU: MenuState(self),
+            GameStateId.PLAYING: PlayingState(self),
+            GameStateId.GAME_OVER: GameOverState(self),
+        }
+        self.change_state(GameStateId.MENU)
+
+    def change_state(self, state_id: GameStateId) -> None:
+        """Переключиться на другое состояние игры."""
+        if self._current_state is not None:
+            self._current_state.exit()
+
+        self._current_state = self._states[state_id]
+        self._current_state.enter()
+
+    # --- основной цикл ---
+
     def run(self) -> None:
-        """Главный игровой цикл."""
         self.running = True
 
         while self.running:
             dt_ms = self.clock.tick(self.fps)
-            dt = dt_ms / 1000.0  # секунды
+            dt = dt_ms / 1000.0
 
             self._handle_events()
             self._update(dt)
-            self._draw(dt)
+            self._draw()
 
             pygame.display.flip()
 
+    def stop(self) -> None:
+        """Корректно остановить игру."""
+        self.running = False
+
+    # --- внутренние шаги цикла ---
+
     def _handle_events(self) -> None:
+        if self._current_state is None:
+            return
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.stop()
+                return
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.running = False
-
-                # Переключение стейтов для теста
-                if event.key == pygame.K_RETURN and self.state == GameState.MENU:
-                    self.state = GameState.PLAYING
-                elif event.key == pygame.K_r and self.state == GameState.GAME_OVER:
-                    self.state = GameState.PLAYING
-
-                # Пример входа в экран Game Over, пока просто по клавише G
-                if event.key == pygame.K_g and self.state == GameState.PLAYING:
-                    self.state = GameState.GAME_OVER
+            self._current_state.handle_event(event)
 
     def _update(self, dt: float) -> None:
-        if self.state == GameState.MENU:
-            self._update_menu(dt)
-        elif self.state == GameState.PLAYING:
-            self._update_playing(dt)
-        elif self.state == GameState.GAME_OVER:
-            self._update_game_over(dt)
+        if self._current_state is not None:
+            self._current_state.update(dt)
 
-    def _draw(self, dt: float) -> None:
-        if self.state == GameState.MENU:
-            self._draw_menu()
-        elif self.state == GameState.PLAYING:
-            self._draw_playing()
-        elif self.state == GameState.GAME_OVER:
-            self._draw_game_over()
+    def _draw(self) -> None:
+        if self._current_state is not None:
+            self._current_state.draw()
 
-        # Поверх всего рисуем FPS в углу
+        # Поверх всего показываем FPS
         fps = self.clock.get_fps()
         fps_surf = self.font.render(f"FPS: {fps:5.1f}", True, self.text_color)
         self.screen.blit(fps_surf, (10, 10))
