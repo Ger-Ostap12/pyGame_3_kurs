@@ -23,16 +23,24 @@ class Game:
         self.running = False
         self.state = GameState.MENU
 
+        # Шрифт для вывода FPS и текста (пока один общий)
+        self.font = pygame.font.SysFont("consolas", 18)
+
+        # Цвета
+        self.bg_color = pygame.Color("black")
+        self.text_color = pygame.Color("white")
+
     def run(self) -> None:
         """Главный игровой цикл."""
         self.running = True
 
         while self.running:
-            dt = self.clock.tick(self.fps) / 1000.0  # секунды
+            dt_ms = self.clock.tick(self.fps)
+            dt = dt_ms / 1000.0  # секунды
 
             self._handle_events()
             self._update(dt)
-            self._draw()
+            self._draw(dt)
 
             pygame.display.flip()
 
@@ -51,6 +59,10 @@ class Game:
                 elif event.key == pygame.K_r and self.state == GameState.GAME_OVER:
                     self.state = GameState.PLAYING
 
+                # Пример входа в экран Game Over, пока просто по клавише G
+                if event.key == pygame.K_g and self.state == GameState.PLAYING:
+                    self.state = GameState.GAME_OVER
+
     def _update(self, dt: float) -> None:
         if self.state == GameState.MENU:
             self._update_menu(dt)
@@ -59,7 +71,7 @@ class Game:
         elif self.state == GameState.GAME_OVER:
             self._update_game_over(dt)
 
-    def _draw(self) -> None:
+    def _draw(self, dt: float) -> None:
         if self.state == GameState.MENU:
             self._draw_menu()
         elif self.state == GameState.PLAYING:
@@ -67,7 +79,12 @@ class Game:
         elif self.state == GameState.GAME_OVER:
             self._draw_game_over()
 
-    # --- Здесь пока заглушки, их расширим позже  ---
+        # Поверх всего рисуем FPS в углу
+        fps = self.clock.get_fps()
+        fps_surf = self.font.render(f"FPS: {fps:5.1f}", True, self.text_color)
+        self.screen.blit(fps_surf, (10, 10))
+
+    # --- Заглушки стейтов ---
 
     def _update_menu(self, dt: float) -> None:
         pass
@@ -79,13 +96,25 @@ class Game:
         pass
 
     def _draw_menu(self) -> None:
-        self.screen.fill("black")
-        # сюда позже добавим отрисовку меню
+        self.screen.fill(self.bg_color)
+
+        title = self.font.render("ASTEROIDS (MENU)", True, self.text_color)
+        hint = self.font.render("Enter - start, Esc - exit", True, self.text_color)
+
+        self.screen.blit(title, (self.size[0] // 2 - title.get_width() // 2, self.size[1] // 3))
+        self.screen.blit(hint, (self.size[0] // 2 - hint.get_width() // 2, self.size[1] // 3 + 30))
 
     def _draw_playing(self) -> None:
-        self.screen.fill("black")
-        # сюда подключаем игрока, астероиды и т.д.
+        self.screen.fill(self.bg_color)
+
+        label = self.font.render("PLAYING (press G to Game Over)", True, self.text_color)
+        self.screen.blit(label, (self.size[0] // 2 - label.get_width() // 2, self.size[1] // 2))
 
     def _draw_game_over(self) -> None:
-        self.screen.fill("black")
-        # сюда добавим экран game over
+        self.screen.fill(self.bg_color)
+
+        title = self.font.render("GAME OVER", True, self.text_color)
+        hint = self.font.render("R - restart, Esc - exit", True, self.text_color)
+
+        self.screen.blit(title, (self.size[0] // 2 - title.get_width() // 2, self.size[1] // 3))
+        self.screen.blit(hint, (self.size[0] // 2 - hint.get_width() // 2, self.size[1] // 3 + 30))
