@@ -97,21 +97,26 @@ class PlayingState(BaseState):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.stop()
-            # Временно для теста: по G — Game Over
             if event.key == pygame.K_g:
                 self.game.change_state(GameStateId.GAME_OVER)
 
     def update(self, dt: float) -> None:
-        # Здесь позже будут игрок, астероиды и т.п.
-        pass
+        # Обновляем все объекты через менеджер
+        self.game.update_objects(dt)
+
+        # Применяем wrap-around ко всем объектам
+        for obj in self.game.game_objects:
+            obj.wrap_around_screen(self.game.size)
 
     def draw(self) -> None:
         screen = self.game.screen
         screen.fill(self.game.bg_color)
 
+        # Рисуем игровые объекты
+        self.game.draw_objects()
+
         font = self.game.font
         label = font.render("PLAYING (press G for Game Over)", True, self.game.text_color)
-
         w, h = self.game.size
         screen.blit(label, (w // 2 - label.get_width() // 2, h // 2))
 
