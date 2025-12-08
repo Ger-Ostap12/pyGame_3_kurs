@@ -42,13 +42,22 @@ class BaseState(ABC):
 
     @abstractmethod
     def update(self, dt: float) -> None:
-        """Обновление логики состояния."""
-        raise NotImplementedError
+        # Здесь позже будут игрок, астероиды и т.п.
+        self.game.update_objects(dt)
 
     @abstractmethod
     def draw(self) -> None:
-        """Отрисовка состояния."""
-        raise NotImplementedError
+        screen = self.game.screen
+        screen.fill(self.game.bg_color)
+
+        # Рисуем игровые объекты
+        self.game.draw_objects()
+
+        font = self.game.font
+        label = font.render("PLAYING (press G for Game Over)", True, self.game.text_color)
+
+        w, h = self.game.size
+        screen.blit(label, (w // 2 - label.get_width() // 2, h // 2))
 
 
 class MenuState(BaseState):

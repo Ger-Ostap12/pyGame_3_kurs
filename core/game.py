@@ -4,6 +4,7 @@ from typing import Dict, Tuple
 
 import pygame
 
+from .game_object import GameObject
 from .states import (
     BaseState,
     GameStateId,
@@ -32,6 +33,10 @@ class Game:
         self.bg_color = pygame.Color("black")
         self.text_color = pygame.Color("white")
 
+        # Менеджер игровых объектов
+        self.game_objects: list[GameObject] = []
+        self.ui_objects: list[GameObject] = []
+
         # FSM: словарь состояний + текущее состояние
         self._states: Dict[GameStateId, BaseState] = {}
         self._current_state: BaseState | None = None
@@ -48,12 +53,40 @@ class Game:
         self.change_state(GameStateId.MENU)
 
     def change_state(self, state_id: GameStateId) -> None:
-        """Переключиться на другое состояние игры."""
         if self._current_state is not None:
             self._current_state.exit()
 
         self._current_state = self._states[state_id]
         self._current_state.enter()
+
+    # --- менеджер объектов ---
+
+    def add_object(self, obj: GameObject, ui: bool = False) -> None:
+        if ui:
+            self.ui_objects.append(obj)
+        else:
+            self.game_objects.append(obj)
+
+    def clear_objects(self) -> None:
+        self.game_objects.clear()
+        self.ui_objects.clear()
+
+    def update_objects(self, dt: float) -> None:
+        for obj in self.game_objects:
+            if obj.is_alive():
+                obj.update(dt)
+        self.game_objects = [obj for obj in self.game_objects if obj.is_alive()]
+
+        for obj in self.ui_objects:
+            if obj.is_alive():
+                obj.update(dt)
+        self.ui_objects = [obj for obj in self.ui_objects if obj.is_alive()]
+
+    def draw_objects(self) -> None:
+        for obj in self.game_objects:
+            obj.draw(self.screen)
+        for obj in self.ui_objects:
+            obj.draw(self.screen)
 
     # --- основной цикл ---
 
@@ -71,7 +104,6 @@ class Game:
             pygame.display.flip()
 
     def stop(self) -> None:
-        """Корректно остановить игру."""
         self.running = False
 
     # --- внутренние шаги цикла ---
@@ -95,42 +127,7 @@ class Game:
         if self._current_state is not None:
             self._current_state.draw()
 
-        # Поверх всего показываем FPS
+        # FPS поверх всего
         fps = self.clock.get_fps()
         fps_surf = self.font.render(f"FPS: {fps:5.1f}", True, self.text_color)
         self.screen.blit(fps_surf, (10, 10))
-
-    # --- Заглушки стейтов ---
-
-    def _update_menu(self, dt: float) -> None:
-        pass
-
-    def _update_playing(self, dt: float) -> None:
-        pass
-
-    def _update_game_over(self, dt: float) -> None:
-        pass
-
-    def _draw_menu(self) -> None:
-        self.screen.fill(self.bg_color)
-
-        title = self.font.render("ASTEROIDS (MENU)", True, self.text_color)
-        hint = self.font.render("Enter - start, Esc - exit", True, self.text_color)
-
-        self.screen.blit(title, (self.size[0] // 2 - title.get_width() // 2, self.size[1] // 3))
-        self.screen.blit(hint, (self.size[0] // 2 - hint.get_width() // 2, self.size[1] // 3 + 30))
-
-    def _draw_playing(self) -> None:
-        self.screen.fill(self.bg_color)
-
-        label = self.font.render("PLAYING (press G to Game Over)", True, self.text_color)
-        self.screen.blit(label, (self.size[0] // 2 - label.get_width() // 2, self.size[1] // 2))
-
-    def _draw_game_over(self) -> None:
-        self.screen.fill(self.bg_color)
-
-        title = self.font.render("GAME OVER", True, self.text_color)
-        hint = self.font.render("R - restart, Esc - exit", True, self.text_color)
-
-        self.screen.blit(title, (self.size[0] // 2 - title.get_width() // 2, self.size[1] // 3))
-        self.screen.blit(hint, (self.size[0] // 2 - hint.get_width() // 2, self.size[1] // 3 + 30))
