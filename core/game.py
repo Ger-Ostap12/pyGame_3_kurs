@@ -4,8 +4,10 @@ from typing import Dict, Tuple
 
 import pygame
 
+from .config import WINDOW_SIZE, FPS, BG_COLOR, TEXT_COLOR, FONT_NAME, FONT_SIZE
 from .game_object import GameObject
 from .input import Input
+from .log import log
 from .states import (
     BaseState,
     GameStateId,
@@ -18,8 +20,8 @@ from .states import (
 class Game:
     def __init__(
         self,
-        size: Tuple[int, int] = (800, 600),
-        fps: int = 60,
+        size: Tuple[int, int] = WINDOW_SIZE,
+        fps: int = FPS,
     ) -> None:
         self.size = size
         self.fps = fps
@@ -30,9 +32,9 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = False
 
-        self.font = pygame.font.SysFont("consolas", 18)
-        self.bg_color = pygame.Color("black")
-        self.text_color = pygame.Color("white")
+        self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+        self.bg_color = BG_COLOR
+        self.text_color = TEXT_COLOR
 
         # Менеджер ввода
         self.input = Input()
@@ -45,6 +47,8 @@ class Game:
         self._states: Dict[GameStateId, BaseState] = {}
         self._current_state: BaseState | None = None
         self._init_states()
+
+        log("Game initialized with size", self.size, "and FPS", self.fps)
 
     # --- управление состояниями ---
 
@@ -62,6 +66,7 @@ class Game:
 
         self._current_state = self._states[state_id]
         self._current_state.enter()
+        log("Change state to", state_id.name)
 
     # --- менеджер объектов ---
 
@@ -96,6 +101,7 @@ class Game:
 
     def run(self) -> None:
         self.running = True
+        log("Game loop started")
 
         while self.running:
             self.input.begin_frame()
@@ -108,6 +114,8 @@ class Game:
             self._draw()
 
             pygame.display.flip()
+
+        log("Game loop stopped")
 
     def stop(self) -> None:
         self.running = False
@@ -139,7 +147,6 @@ class Game:
     # --- отладочный overlay ---
 
     def _draw_debug_overlay(self) -> None:
-        """Показывает FPS, количество объектов и текущее состояние."""
         lines = [
             f"FPS: {self.clock.get_fps():5.1f}",
             f"Objects: {len(self.game_objects)}",
