@@ -123,9 +123,7 @@ class Game:
                 self.stop()
                 return
 
-            # сначала обновляем состояние ввода
             self.input.handle_event(event)
-            # потом отдаём событие текущему состоянию
             self._current_state.handle_event(event)
 
     def _update(self, dt: float) -> None:
@@ -136,7 +134,20 @@ class Game:
         if self._current_state is not None:
             self._current_state.draw()
 
-        # FPS поверх всего
-        fps = self.clock.get_fps()
-        fps_surf = self.font.render(f"FPS: {fps:5.1f}", True, self.text_color)
-        self.screen.blit(fps_surf, (10, 10))
+        self._draw_debug_overlay()
+
+    # --- отладочный overlay ---
+
+    def _draw_debug_overlay(self) -> None:
+        """Показывает FPS, количество объектов и текущее состояние."""
+        lines = [
+            f"FPS: {self.clock.get_fps():5.1f}",
+            f"Objects: {len(self.game_objects)}",
+            f"State: {type(self._current_state).__name__ if self._current_state else 'None'}",
+        ]
+
+        x, y = 10, 10
+        for line in lines:
+            surf = self.font.render(line, True, self.text_color)
+            self.screen.blit(surf, (x, y))
+            y += surf.get_height() + 2
