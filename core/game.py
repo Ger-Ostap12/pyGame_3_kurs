@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 import pygame
 
 from .game_object import GameObject
+from .input import Input
 from .states import (
     BaseState,
     GameStateId,
@@ -32,6 +33,9 @@ class Game:
         self.font = pygame.font.SysFont("consolas", 18)
         self.bg_color = pygame.Color("black")
         self.text_color = pygame.Color("white")
+
+        # Менеджер ввода
+        self.input = Input()
 
         # Менеджер игровых объектов
         self.game_objects: list[GameObject] = []
@@ -94,6 +98,8 @@ class Game:
         self.running = True
 
         while self.running:
+            self.input.begin_frame()
+
             dt_ms = self.clock.tick(self.fps)
             dt = dt_ms / 1000.0
 
@@ -117,6 +123,9 @@ class Game:
                 self.stop()
                 return
 
+            # сначала обновляем состояние ввода
+            self.input.handle_event(event)
+            # потом отдаём событие текущему состоянию
             self._current_state.handle_event(event)
 
     def _update(self, dt: float) -> None:
