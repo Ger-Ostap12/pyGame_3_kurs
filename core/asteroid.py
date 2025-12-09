@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 import pygame
 
 from .game_object import GameObject, Vector2
+from graphics.sprites import AsteroidSprite
 
 
 class AsteroidSize(Enum):
@@ -79,31 +80,13 @@ class Asteroid(GameObject):
         if random.random() < 0.5:
             self.rotation_speed = -self.rotation_speed
 
-        # Создаем спрайт астероида (неправильный многоугольник)
-        self._create_sprite()
-
-    def _create_sprite(self) -> None:
-        """Создать спрайт астероида в виде неправильного многоугольника."""
-        size = int(self.radius * 2)
-        surface = pygame.Surface((size, size), pygame.SRCALPHA)
-
-        # Генерируем точки для неправильного многоугольника
-        num_points = random.randint(8, 12)
-        center_x, center_y = size // 2, size // 2
-
-        points = []
-        for i in range(num_points):
-            angle = (2 * math.pi * i) / num_points
-            # Добавляем случайное отклонение радиуса для неровности
-            radius_var = random.uniform(0.7, 1.0)
-            r = self.radius * radius_var
-            x = center_x + math.cos(angle) * r
-            y = center_y + math.sin(angle) * r
-            points.append((x, y))
-
-        # Рисуем контур астероида
-        pygame.draw.polygon(surface, pygame.Color("white"), points, 2)
-        self.sprite = surface
+        # Создаем векторный спрайт астероида
+        self.asteroid_sprite = AsteroidSprite(
+            size=config["radius"],
+            color=pygame.Color("white"),
+            irregularity=0.3,
+            seed=random.randint(0, 10000)
+        )
 
     def update(self, dt: float) -> None:
         """Обновить позицию и вращение астероида."""
@@ -117,12 +100,9 @@ class Asteroid(GameObject):
         self.wrap_around_screen(self.screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать астероид с учетом вращения."""
-        if self.sprite is not None:
-            # Поворачиваем спрайт
-            rotated_sprite = pygame.transform.rotate(self.sprite, -self.rotation)
-            rect = rotated_sprite.get_rect(center=self.position)
-            surface.blit(rotated_sprite, rect)
+        """Отрисовать астероид с учетом вращения используя AsteroidSprite."""
+        if hasattr(self, 'asteroid_sprite') and self.asteroid_sprite is not None:
+            self.asteroid_sprite.draw(surface, self.position, self.rotation)
         else:
             # Fallback: простой круг
             pygame.draw.circle(
