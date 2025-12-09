@@ -7,8 +7,10 @@ from typing import TYPE_CHECKING, Optional
 import pygame
 from pygame.math import Vector2
 
+from .asteroid import Asteroid, AsteroidWave
+from .collision import check_collisions
 from .config import FONT_NAME, FONT_SIZE
-from .player import Player
+from .player import Bullet, Player
 from graphics.particles import ParticleSystem
 from graphics.stars import StarField
 from graphics.ui import UIManager
@@ -90,6 +92,7 @@ class PlayingState(BaseState):
     def __init__(self, game: Game) -> None:
         super().__init__(game)
         self.player: Optional[Player] = None
+        self.asteroid_wave: Optional[AsteroidWave] = None
         self.star_field: Optional[StarField] = None
         self.particle_system: Optional[ParticleSystem] = None
         self.ui_manager: Optional[UIManager] = None
@@ -117,6 +120,12 @@ class PlayingState(BaseState):
         # Добавляем игрока в менеджер объектов
         self.game.add_object(self.player)
 
+        # Создаем систему волн астероидов
+        self.asteroid_wave = AsteroidWave(self.game.size)
+        self.asteroid_wave.spawn_wave(4)  # Первая волна - 4 больших астероида
+        for asteroid in self.asteroid_wave.asteroids:
+            self.game.add_object(asteroid)
+
         # Инициализируем UI
         self.score = 0
         self.level = 1
@@ -128,6 +137,9 @@ class PlayingState(BaseState):
     def exit(self) -> None:
         """При выходе очищаем игрока и графические системы."""
         self.player = None
+        if self.asteroid_wave:
+            self.asteroid_wave.clear()
+        self.asteroid_wave = None
         self.star_field = None
         self.particle_system = None
         self.ui_manager = None
@@ -138,23 +150,13 @@ class PlayingState(BaseState):
             if event.key == pygame.K_ESCAPE:
                 # Пауза или выход в меню
                 self.game.change_state(GameStateId.MENU)
-            elif event.key == pygame.K_t:
-                # Тестовая клавиша для демонстрации взрыва
-                if self.player is not None and self.particle_system is not None:
-                    self.particle_system.add_explosion(
-                        self.player.position,
-                        color=pygame.Color("orange"),
-                        particle_count=40,
-                        speed=250.0,
-                        lifetime=0.6
-                    )
 
     def update(self, dt: float) -> None:
         # Обновляем игрока (обработка ввода)
         if self.player is not None and self.player.is_alive():
             self.player.handle_input(self.game.input, dt)
 
-        # Обновляем все объекты через менеджер
+        # Обновляем все объекты через менеджер (включая астероиды)
         self.game.update_objects(dt)
 
         # Применяем wrap-around ко всем объектам
@@ -168,6 +170,25 @@ class PlayingState(BaseState):
 
         if self.particle_system is not None:
             self.particle_system.update(dt)
+
+        # Синхронизируем астероиды с game_objects
+        if self.asteroid_wave:
+            active_asteroids = [obj for obj in self.game.game_objects if isinstance(obj, Asteroid) and obj.is_alive()]
+            self.asteroid_wave.asteroids = active_asteroids
+
+        # Проверка коллизий: пули -> астероиды
+        if self.player and self.asteroid_wave:
+            self._check_bullet_asteroid_collisions()
+
+        # Проверка коллизий: игрок -> астероиды
+        if self.player and self.player.is_alive() and self.asteroid_wave:
+            self._check_player_asteroid_collisions()
+
+        # Если волна очищена, создаем новую
+        if self.asteroid_wave and self.asteroid_wave.is_wave_cleared():
+            self.asteroid_wave.spawn_wave()
+            for asteroid in self.asteroid_wave.asteroids:
+                self.game.add_object(asteroid)
 
         # Обновляем UI
         if self.ui_manager is not None and self.player is not None:
@@ -203,7 +224,7 @@ class PlayingState(BaseState):
         if self.star_field is not None:
             self.star_field.draw(screen)
 
-        # Рисуем игровые объекты (включая игрока)
+        # Рисуем игровые объекты (включая игрока и астероиды)
         self.game.draw_objects()
 
         # Рисуем эффекты частиц (взрывы)
@@ -233,6 +254,79 @@ class PlayingState(BaseState):
             text_surf = font.render(hint, True, pygame.Color("gray"))
             self.game.screen.blit(text_surf, (x, y))
             y += 25
+
+
+    def _check_bullet_asteroid_collisions(self) -> None:
+        """Проверка коллизий между пулями и астероидами."""
+        bullets = self.player.get_bullets()
+        asteroids = self.asteroid_wave.get_active_asteroids()
+
+        if not bullets or not asteroids:
+            return
+
+        def on_hit(bullet: Bullet, asteroid: Asteroid) -> None:
+            """Обработка попадания пули в астероид."""
+            # Уничтожаем пулю
+            bullet.kill()
+
+            # Добавляем очки
+            self.score += asteroid.points
+
+            # Создаём взрыв
+            if self.particle_system is not None:
+                self.particle_system.add_explosion(
+                    asteroid.position,
+                    color=pygame.Color("orange"),
+                    particle_count=30,
+                    speed=200.0,
+                    lifetime=0.5
+                )
+
+            # Разбиваем астероид
+            fragments = asteroid.split()
+            asteroid.kill()
+
+            # Добавляем осколки в волну и в game_objects
+            for fragment in fragments:
+                self.asteroid_wave.add_asteroid(fragment)
+                self.game.add_object(fragment)
+
+        check_collisions(bullets, asteroids, on_hit)
+
+    def _check_player_asteroid_collisions(self) -> None:
+        """Проверка коллизий между игроком и астероидами."""
+        asteroids = self.asteroid_wave.get_active_asteroids()
+
+        if not asteroids:
+            return
+
+        def on_hit(player: Player, asteroid: Asteroid) -> None:
+            """Обработка столкновения игрока с астероидом."""
+            # Создаём взрыв
+            if self.particle_system is not None:
+                self.particle_system.add_explosion(
+                    asteroid.position,
+                    color=pygame.Color("red"),
+                    particle_count=40,
+                    speed=250.0,
+                    lifetime=0.6
+                )
+
+            # Игрок получает урон
+            if not player.take_damage():
+                # Игрок умер
+                return
+
+            # Разбиваем астероид при столкновении
+            fragments = asteroid.split()
+            asteroid.kill()
+
+            # Добавляем осколки в волну и в game_objects
+            for fragment in fragments:
+                self.asteroid_wave.add_asteroid(fragment)
+                self.game.add_object(fragment)
+
+        check_collisions([self.player], asteroids, on_hit)
 
 
 class GameOverState(BaseState):
