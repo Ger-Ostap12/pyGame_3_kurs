@@ -147,14 +147,11 @@ class Game:
     # --- отладочный overlay ---
 
     def _draw_debug_overlay(self) -> None:
-        lines = [
-            f"FPS: {self.clock.get_fps():5.1f}",
-            f"Objects: {len(self.game_objects)}",
-            f"State: {type(self._current_state).__name__ if self._current_state else 'None'}",
-        ]
-
-        x, y = 10, 10
-        for line in lines:
-            surf = self.font.render(line, True, self.text_color)
-            self.screen.blit(surf, (x, y))
-            y += surf.get_height() + 2
+        """Отрисовать только FPS в правом нижнем углу."""
+        fps_text = f"FPS: {self.clock.get_fps():5.1f}"
+        fps_surf = self.font.render(fps_text, True, self.text_color)
+        
+        # Размещаем в правом нижнем углу
+        x = self.size[0] - fps_surf.get_width() - 10
+        y = self.size[1] - fps_surf.get_height() - 10
+        self.screen.blit(fps_surf, (x, y))
