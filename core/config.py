@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 
 # Общие настройки окна и игры
-WINDOW_SIZE = (1920, 1080)
+WINDOW_SIZE = (1280, 720)
 FPS = 60
 
 # Цвета и шрифт по умолчанию
