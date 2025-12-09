@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import random
 from typing import List, Optional, Tuple
 
@@ -119,7 +118,7 @@ class Player(GameObject):
         self.bullet_pool = BulletPool()
 
         # Создаем векторный спрайт корабля
-        self.ship_sprite = ShipSprite(size=self.RADIUS * 2.5, color=pygame.Color("white"))
+        self.ship_sprite = ShipSprite(size=self.RADIUS * 2.5, color=pygame.Color("white"), glow=True)
 
     def handle_input(self, input_manager: Input, dt: float) -> None:
         """Обработать ввод от игрока."""
@@ -222,7 +221,8 @@ class Player(GameObject):
 
     def _draw_ship(self, surface: pygame.Surface) -> None:
         """Отрисовать корабль с учетом поворота используя ShipSprite."""
-        self.ship_sprite.draw(surface, self.position, self.rotation)
+        if hasattr(self, 'ship_sprite') and self.ship_sprite is not None:
+            self.ship_sprite.draw(surface, self.position, self.rotation)
 
     def is_invincible(self) -> bool:
         """Проверить, неуязвим ли игрок."""
@@ -259,3 +259,7 @@ class Player(GameObject):
         """Сбросить игрока к начальному состоянию."""
         self.lives = self.INITIAL_LIVES
         self.respawn()
+
+
+# Для поддержки математических функций
+import math
