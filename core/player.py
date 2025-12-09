@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from typing import List, Optional, Tuple
 
@@ -7,6 +8,7 @@ import pygame
 
 from core.game_object import GameObject, Vector2
 from core.input import Input
+from graphics.sprites import ShipSprite
 
 
 class Bullet(GameObject):
@@ -116,24 +118,8 @@ class Player(GameObject):
         self.invincibility_timer = 0.0
         self.bullet_pool = BulletPool()
 
-        # Создаем спрайт корабля (треугольник)
-        self._create_sprite()
-
-    def _create_sprite(self) -> None:
-        """Создать спрайт корабля в виде треугольника."""
-        size = int(self.radius * 2.5)
-        surface = pygame.Surface((size, size), pygame.SRCALPHA)
-
-        # Треугольник, указывающий вверх
-        points = [
-            (size // 2, 0),  # Нос корабля
-            (0, size),  # Левый угол
-            (size // 2, size * 0.75),  # Центр сзади
-            (size, size)  # Правый угол
-        ]
-
-        pygame.draw.polygon(surface, pygame.Color("white"), points, 2)
-        self.sprite = surface
+        # Создаем векторный спрайт корабля
+        self.ship_sprite = ShipSprite(size=self.RADIUS * 2.5, color=pygame.Color("white"))
 
     def handle_input(self, input_manager: Input, dt: float) -> None:
         """Обработать ввод от игрока."""
@@ -234,22 +220,9 @@ class Player(GameObject):
         else:
             self._draw_ship(surface)
 
-        # Отображаем жизни
-        self._draw_lives(surface)
-
     def _draw_ship(self, surface: pygame.Surface) -> None:
-        """Отрисовать корабль с учетом поворота."""
-        if self.sprite is not None:
-            # Поворачиваем спрайт
-            rotated_sprite = pygame.transform.rotate(self.sprite, -self.rotation)
-            rect = rotated_sprite.get_rect(center=self.position)
-            surface.blit(rotated_sprite, rect)
-
-    def _draw_lives(self, surface: pygame.Surface) -> None:
-        """Отрисовать счетчик жизней."""
-        font = pygame.font.Font(None, 36)
-        lives_text = font.render(f"Lives: {self.lives}", True, pygame.Color("white"))
-        surface.blit(lives_text, (10, 10))
+        """Отрисовать корабль с учетом поворота используя ShipSprite."""
+        self.ship_sprite.draw(surface, self.position, self.rotation)
 
     def is_invincible(self) -> bool:
         """Проверить, неуязвим ли игрок."""
@@ -286,7 +259,3 @@ class Player(GameObject):
         """Сбросить игрока к начальному состоянию."""
         self.lives = self.INITIAL_LIVES
         self.respawn()
-
-
-# Для поддержки математических функций
-import math
