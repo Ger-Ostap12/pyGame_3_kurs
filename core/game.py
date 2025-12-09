@@ -147,42 +147,14 @@ class Game:
     # --- отладочный overlay ---
 
     def _draw_debug_overlay(self) -> None:
-        """Отрисовать только FPS в правом верхнем углу."""
-        try:
-            fps_value = self.clock.get_fps()
-            fps_text = f"FPS: {fps_value:5.1f}"
-            
-            # Используем яркий цвет для лучшей видимости
-            if fps_value >= 50:
-                fps_color = pygame.Color("lime")
-            elif fps_value >= 30:
-                fps_color = pygame.Color("yellow")
-            else:
-                fps_color = pygame.Color("red")
-            
-            # Рендерим текст (используем тот же шрифт, что и в игре)
-            fps_surf = self.font.render(fps_text, True, fps_color)
-            
-            if fps_surf is None:
-                # Если шрифт не работает, используем дефолтный
-                default_font = pygame.font.Font(None, 24)
-                fps_surf = default_font.render(fps_text, True, fps_color)
-            
-            if fps_surf is None:
-                return
-            
-            # Размещаем в правом верхнем углу (под уровнем)
-            x = self.size[0] - fps_surf.get_width() - 10
-            y = 80  # Под UI элементами (Score, Lives находятся на 10 и 40)
-            
-            # Рисуем полупрозрачный фон для лучшей читаемости
-            bg_rect = pygame.Rect(x - 5, y - 2, fps_surf.get_width() + 10, fps_surf.get_height() + 4)
-            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
-            pygame.draw.rect(bg_surface, (0, 0, 0, 200), (0, 0, bg_rect.width, bg_rect.height))
-            self.screen.blit(bg_surface, bg_rect)
-            
-            # Рисуем FPS поверх фона
-            self.screen.blit(fps_surf, (x, y))
-        except Exception:
-            # Если что-то пошло не так, просто игнорируем
-            pass
+        lines = [
+            f"FPS: {self.clock.get_fps():5.1f}",
+            f"Objects: {len(self.game_objects)}",
+            f"State: {type(self._current_state).__name__ if self._current_state else 'None'}",
+        ]
+
+        x, y = 10, 10
+        for line in lines:
+            surf = self.font.render(line, True, self.text_color)
+            self.screen.blit(surf, (x, y))
+            y += surf.get_height() + 2
