@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+import random
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Optional
@@ -9,6 +11,9 @@ from pygame.math import Vector2
 
 from .config import FONT_NAME, FONT_SIZE
 from .player import Player
+from .scoring import ScoringSystem
+from .collision import check_collisions
+from enemies import LargeSaucer, SmallSaucer
 from graphics.particles import ParticleSystem
 from graphics.stars import StarField
 from graphics.ui import UIManager
@@ -117,13 +122,58 @@ class PlayingState(BaseState):
         # Добавляем игрока в менеджер объектов
         self.game.add_object(self.player)
 
+        # Создаем врагов
+        screen_width, screen_height = self.game.size
+        player_x, player_y = center.x, center.y
+        
+        # Минимальное расстояние от игрока для спавна
+        min_distance = 200
+        max_distance = 400
+        
+        # Функция для получения позиции игрока (общая для всех тарелок)
+        def get_player_pos():
+            if self.player is not None and self.player.is_alive():
+                return self.player.position
+            return None
+        
+        # Создаем 2 большие тарелки - спавним их ближе к игроку для видимости
+        for i in range(2):
+            # Спавним врагов в видимой области рядом с игроком
+            angle = (i * 180) + random.uniform(-30, 30)  # Разные углы от игрока
+            distance = random.uniform(250, 350)  # Расстояние от игрока
+            angle_rad = math.radians(angle)
+            pos = center + Vector2(
+                math.cos(angle_rad) * distance,
+                math.sin(angle_rad) * distance
+            )
+            # Ограничиваем позицию экраном
+            pos.x = max(50, min(screen_width - 50, pos.x))
+            pos.y = max(50, min(screen_height - 50, pos.y))
+            
+            large_saucer = LargeSaucer(pos, self.game.size, get_player_pos)
+            self.game.add_object(large_saucer)
+        
+        # Создаем 2 маленькие тарелки с прицельной стрельбой - спавним их ближе к игроку
+        for i in range(2):
+            # Спавним врагов в видимой области рядом с игроком
+            angle = (i * 180) + 90 + random.uniform(-30, 30)  # Разные углы от игрока
+            distance = random.uniform(250, 350)  # Расстояние от игрока
+            angle_rad = math.radians(angle)
+            pos = center + Vector2(
+                math.cos(angle_rad) * distance,
+                math.sin(angle_rad) * distance
+            )
+            # Ограничиваем позицию экраном
+            pos.x = max(50, min(screen_width - 50, pos.x))
+            pos.y = max(50, min(screen_height - 50, pos.y))
+            
+            small_saucer = SmallSaucer(pos, self.game.size, get_player_pos)
+            self.game.add_object(small_saucer)
+
         # Инициализируем UI
         self.score = 0
         self.level = 1
         self.ui_manager.set_score(0)
-        self.ui_manager.set_lives(self.player.lives)
-        self.ui_manager.set_level(1)
-        self.ui_manager.set_next_level_score(1000)
 
     def exit(self) -> None:
         """При выходе очищаем игрока и графические системы."""
@@ -157,6 +207,48 @@ class PlayingState(BaseState):
         # Обновляем все объекты через менеджер
         self.game.update_objects(dt)
 
+        # Проверяем коллизии между пулями игрока и врагами
+        if self.player is not None and self.player.is_alive():
+            player_bullets = self.player.get_bullets()
+            enemies = [
+                obj for obj in self.game.game_objects
+                if isinstance(obj, (LargeSaucer, SmallSaucer)) and obj.is_alive()
+            ]
+
+            # Простая проверка коллизий на основе расстояния (радиусная проверка)
+            for bullet in player_bullets:
+                if not bullet.is_alive():
+                    continue
+                
+                for enemy in enemies:
+                    if not enemy.is_alive():
+                        continue
+                    
+                    # Вычисляем расстояние между центрами
+                    distance = (bullet.position - enemy.position).length()
+                    # Проверяем коллизию (сумма радиусов)
+                    collision_distance = bullet.radius + enemy.radius
+                    
+                    if distance <= collision_distance:
+                        # Попадание! Уничтожаем врага
+                        enemy.kill()
+                        # Уничтожаем пулю
+                        bullet.kill()
+                        # Начисляем очки
+                        points = ScoringSystem.get_points_for_enemy_instance(enemy)
+                        self.score += points
+                        # Создаём взрыв
+                        if self.particle_system is not None:
+                            self.particle_system.add_explosion(
+                                enemy.position,
+                                color=pygame.Color("orange"),
+                                particle_count=30,
+                                speed=200.0,
+                                lifetime=0.5
+                            )
+                        # Одна пуля может попасть только в одного врага
+                        break
+
         # Применяем wrap-around ко всем объектам
         for obj in self.game.game_objects:
             obj.wrap_around_screen(self.game.size)
@@ -170,16 +262,8 @@ class PlayingState(BaseState):
             self.particle_system.update(dt)
 
         # Обновляем UI
-        if self.ui_manager is not None and self.player is not None:
-            self.ui_manager.set_lives(self.player.lives)
+        if self.ui_manager is not None:
             self.ui_manager.set_score(self.score)
-            self.ui_manager.set_level(self.level)
-
-            # Проверяем переход на следующий уровень
-            if self.ui_manager.check_level_up():
-                self.level += 1
-                self.ui_manager.set_level(self.level)
-                self.ui_manager.set_next_level_score(self.level * 1000)
 
         # Проверяем, жив ли игрок
         if self.player is not None and not self.player.is_alive():
