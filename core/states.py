@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import pygame
+from pygame.math import Vector2
+
+from .player import Player
 
 if TYPE_CHECKING:
     from .game import Game
@@ -42,22 +45,13 @@ class BaseState(ABC):
 
     @abstractmethod
     def update(self, dt: float) -> None:
-        # Здесь позже будут игрок, астероиды и т.п.
-        self.game.update_objects(dt)
+        """Обновление логики состояния."""
+        pass
 
     @abstractmethod
     def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
-
-        # Рисуем игровые объекты
-        self.game.draw_objects()
-
-        font = self.game.font
-        label = font.render("PLAYING (press G for Game Over)", True, self.game.text_color)
-
-        w, h = self.game.size
-        screen.blit(label, (w // 2 - label.get_width() // 2, h // 2))
+        """Отрисовка состояния."""
+        pass
 
 
 class MenuState(BaseState):
@@ -89,18 +83,42 @@ class MenuState(BaseState):
 
 
 class PlayingState(BaseState):
+    def __init__(self, game: Game) -> None:
+        super().__init__(game)
+        self.player: Optional[Player] = None
+
     @property
     def id(self) -> GameStateId:
         return GameStateId.PLAYING
 
+    def enter(self) -> None:
+        """При входе в состояние создаем игрока."""
+        # Очищаем все старые объекты
+        self.game.clear_objects()
+
+        # Создаем игрока в центре экрана
+        center = Vector2(self.game.size[0] / 2, self.game.size[1] / 2)
+        self.player = Player(position=center, screen_size=self.game.size)
+
+        # Добавляем игрока в менеджер объектов
+        self.game.add_object(self.player)
+
+    def exit(self) -> None:
+        """При выходе очищаем игрока."""
+        self.player = None
+        self.game.clear_objects()
+
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.game.stop()
-            if event.key == pygame.K_g:
-                self.game.change_state(GameStateId.GAME_OVER)
+                # Пауза или выход в меню
+                self.game.change_state(GameStateId.MENU)
 
     def update(self, dt: float) -> None:
+        # Обновляем игрока (обработка ввода)
+        if self.player is not None and self.player.is_alive():
+            self.player.handle_input(self.game.input, dt)
+
         # Обновляем все объекты через менеджер
         self.game.update_objects(dt)
 
@@ -108,17 +126,37 @@ class PlayingState(BaseState):
         for obj in self.game.game_objects:
             obj.wrap_around_screen(self.game.size)
 
+        # Проверяем, жив ли игрок
+        if self.player is not None and not self.player.is_alive():
+            # Переходим в Game Over
+            self.game.change_state(GameStateId.GAME_OVER)
+
     def draw(self) -> None:
         screen = self.game.screen
         screen.fill(self.game.bg_color)
 
-        # Рисуем игровые объекты
+        # Рисуем игровые объекты (включая игрока)
         self.game.draw_objects()
 
-        font = self.game.font
-        label = font.render("PLAYING (press G for Game Over)", True, self.game.text_color)
-        w, h = self.game.size
-        screen.blit(label, (w // 2 - label.get_width() // 2, h // 2))
+        # Отображаем подсказки управления
+        self._draw_controls_hint()
+
+    def _draw_controls_hint(self) -> None:
+        """Отрисовка подсказок по управлению."""
+        font = pygame.font.Font(None, 24)
+        hints = [
+            "Controls:",
+            "Arrow Keys / WASD - Move & Rotate",
+            "Space - Shoot",
+            "Shift - Hyperspace",
+            "ESC - Menu"
+        ]
+
+        x, y = self.game.size[0] - 300, self.game.size[1] - 150
+        for hint in hints:
+            text_surf = font.render(hint, True, pygame.Color("gray"))
+            self.game.screen.blit(text_surf, (x, y))
+            y += 25
 
 
 class GameOverState(BaseState):
@@ -131,7 +169,7 @@ class GameOverState(BaseState):
             if event.key == pygame.K_r:
                 self.game.change_state(GameStateId.PLAYING)
             elif event.key == pygame.K_ESCAPE:
-                self.game.stop()
+                self.game.change_state(GameStateId.MENU)
 
     def update(self, dt: float) -> None:
         pass
@@ -141,9 +179,13 @@ class GameOverState(BaseState):
         screen.fill(self.game.bg_color)
 
         font = self.game.font
-        title = font.render("GAME OVER", True, self.game.text_color)
-        hint = font.render("R - restart, Esc - exit", True, self.game.text_color)
+        title_font = pygame.font.SysFont(FONT_NAME, FONT_SIZE * 2)
+
+        title = title_font.render("GAME OVER", True, pygame.Color("red"))
+        hint1 = font.render("R - restart", True, self.game.text_color)
+        hint2 = font.render("Esc - menu", True, self.game.text_color)
 
         w, h = self.game.size
         screen.blit(title, (w // 2 - title.get_width() // 2, h // 3))
-        screen.blit(hint, (w // 2 - hint.get_width() // 2, h // 3 + 30))
+        screen.blit(hint1, (w // 2 - hint1.get_width() // 2, h // 3 + 80))
+        screen.blit(hint2, (w // 2 - hint2.get_width() // 2, h // 3 + 110))
