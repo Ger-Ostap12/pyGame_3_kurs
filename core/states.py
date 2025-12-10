@@ -77,6 +77,7 @@ class PlayingState(BaseState):
         self.particle_system: Optional[ParticleSystem] = None
         self.ui_manager: Optional[UIManager] = None
         self.asteroid_field: Optional[AsteroidField] = None
+        self.enemy_wave: int = 1
         self.score = 0
         self.level = 1
 
@@ -106,53 +107,9 @@ class PlayingState(BaseState):
         self.asteroid_field.reset()
         self.asteroid_field.spawn_wave(center)
 
-        # Создаем врагов
-        screen_width, screen_height = self.game.size
-        player_x, player_y = center.x, center.y
-
-        # Минимальное расстояние от игрока для спавна
-        min_distance = 200
-        max_distance = 400
-
-        # Функция для получения позиции игрока (общая для всех тарелок)
-        def get_player_pos():
-            if self.player is not None and self.player.is_alive():
-                return self.player.position
-            return None
-
-        # Создаем 2 большие тарелки - спавним их ближе к игроку для видимости
-        for i in range(2):
-            # Спавним врагов в видимой области рядом с игроком
-            angle = (i * 180) + random.uniform(-30, 30)  # Разные углы от игрока
-            distance = random.uniform(250, 350)  # Расстояние от игрока
-            angle_rad = math.radians(angle)
-            pos = center + Vector2(
-                math.cos(angle_rad) * distance,
-                math.sin(angle_rad) * distance
-            )
-            # Ограничиваем позицию экраном
-            pos.x = max(50, min(screen_width - 50, pos.x))
-            pos.y = max(50, min(screen_height - 50, pos.y))
-
-            large_saucer = LargeSaucer(pos, self.game.size, get_player_pos)
-            self.game.add_object(large_saucer)
-
-        # Создаем 2 маленькие тарелки с прицельной стрельбой - спавним их ближе к игроку
-        for i in range(2):
-            # Спавним врагов в видимой области рядом с игроком
-            angle = (i * 180) + 90 + random.uniform(-30, 30)  # Разные углы от игрока
-            distance = random.uniform(250, 350)  # Расстояние от игрока
-            angle_rad = math.radians(angle)
-            pos = center + Vector2(
-                math.cos(angle_rad) * distance,
-                math.sin(angle_rad) * distance
-            )
-            # Ограничиваем позицию экраном
-            pos.x = max(50, min(screen_width - 50, pos.x))
-            pos.y = max(50, min(screen_height - 50, pos.y))
-
-            small_saucer = SmallSaucer(pos, self.game.size, get_player_pos)
-            self.game.add_object(small_saucer)
+        # Создаем врагов волной
+        self.enemy_wave = 1
+        self._spawn_enemy_wave(center)
 
         # Инициализируем UI
         self.score = 0
@@ -366,6 +323,17 @@ class PlayingState(BaseState):
                 player_pos = self.player.position if (self.player is not None and self.player.is_alive()) else None
                 self.asteroid_field.next_wave(player_pos)
 
+        # Генерация новых волн врагов (летающие тарелки)
+        if player_alive:
+            active_enemies = [
+                obj for obj in self.game.game_objects
+                if isinstance(obj, (LargeSaucer, SmallSaucer)) and obj.is_alive()
+            ]
+            if len(active_enemies) == 0:
+                self.enemy_wave += 1
+                player_pos = self.player.position if self.player is not None else None
+                self._spawn_enemy_wave(player_pos)
+
         # Проверяем, жив ли игрок
         if self.player is not None and not self.player.is_alive():
             # Создаём взрыв при смерти игрока
@@ -428,3 +396,36 @@ class PlayingState(BaseState):
             text_surf = font.render(hint, True, pygame.Color("gray"))
             self.game.screen.blit(text_surf, (x, y))
             y += 25
+
+    def _spawn_enemy_wave(self, center: Optional[Vector2]) -> None:
+        """Создать волну врагов (тарелок) с ростом количества."""
+        screen_width, screen_height = self.game.size
+
+        # Функция для получения позиции игрока (общая для всех тарелок)
+        def get_player_pos():
+            if self.player is not None and self.player.is_alive():
+                return self.player.position
+            return None
+
+        # Количество врагов растёт с волной, но ограничено
+        large_count = min(1 + (self.enemy_wave - 1) // 2, 3)  # 1,1,2,2,3...
+        small_count = min(2 + (self.enemy_wave - 1), 6)       # 2,3,4,5,6...
+
+        # Разные углы для распределения вокруг центра
+        def spawn_saucer(create_fn, count: int, base_angle: float = 0.0) -> None:
+            for i in range(count):
+                angle = base_angle + (i * (360 / max(count, 1))) + random.uniform(-25, 25)
+                distance = random.uniform(240, 380)
+                angle_rad = math.radians(angle)
+                pos = (center or Vector2(screen_width / 2, screen_height / 2)) + Vector2(
+                    math.cos(angle_rad) * distance,
+                    math.sin(angle_rad) * distance
+                )
+                # Ограничиваем позицию экраном
+                pos.x = max(50, min(screen_width - 50, pos.x))
+                pos.y = max(50, min(screen_height - 50, pos.y))
+                saucer = create_fn(pos, self.game.size, get_player_pos)
+                self.game.add_object(saucer)
+
+        spawn_saucer(LargeSaucer, large_count, base_angle=0.0)
+        spawn_saucer(SmallSaucer, small_count, base_angle=90.0)
