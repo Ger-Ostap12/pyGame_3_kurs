@@ -181,6 +181,8 @@ class PlayingState(BaseState):
         self.score = 0
         self.level = 1
         self.ui_manager.set_score(0)
+        self.ui_manager.set_level(1)
+        self.ui_manager.set_next_level_score(1000 * self.level)
 
     def exit(self) -> None:
         """При выходе очищаем игрока и графические системы."""
@@ -370,6 +372,8 @@ class PlayingState(BaseState):
         # Обновляем UI
         if self.ui_manager is not None:
             self.ui_manager.set_score(self.score)
+            if self.player is not None:
+                self.ui_manager.set_lives(self.player.lives)
 
         # Генерация новых волн астероидов
         if self.asteroid_field is not None:
@@ -379,6 +383,9 @@ class PlayingState(BaseState):
             ]
             if len(active_asteroids) == 0:
                 self.level += 1
+                if self.ui_manager is not None:
+                    self.ui_manager.set_level(self.level)
+                    self.ui_manager.set_next_level_score(1000 * self.level)
                 player_pos = self.player.position if (self.player is not None and self.player.is_alive()) else None
                 self.asteroid_field.next_wave(player_pos)
 
