@@ -11,8 +11,11 @@ from .log import log
 from .states import (
     BaseState,
     GameStateId,
-    MenuState,
     PlayingState,
+)
+from .ui_states import (
+    NicknameState,
+    MenuState,
     GameOverState,
 )
 
@@ -42,6 +45,9 @@ class Game:
         # Менеджер игровых объектов
         self.game_objects: list[GameObject] = []
         self.ui_objects: list[GameObject] = []
+        
+        # Последний счёт (для GameOver)
+        self.last_score: int = 0
 
         # FSM: словарь состояний + текущее состояние
         self._states: Dict[GameStateId, BaseState] = {}
@@ -54,11 +60,12 @@ class Game:
 
     def _init_states(self) -> None:
         self._states = {
+            GameStateId.NICKNAME: NicknameState(self),
             GameStateId.MENU: MenuState(self),
             GameStateId.PLAYING: PlayingState(self),
             GameStateId.GAME_OVER: GameOverState(self),
         }
-        self.change_state(GameStateId.MENU)
+        self.change_state(GameStateId.NICKNAME)
 
     def change_state(self, state_id: GameStateId) -> None:
         if self._current_state is not None:
