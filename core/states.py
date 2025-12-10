@@ -215,17 +215,24 @@ class PlayingState(BaseState):
         # Обновляем все объекты через менеджер
         self.game.update_objects(dt)
 
+        player_alive = self.player is not None and self.player.is_alive()
+
+        # Список активных объектов для коллизий
+        asteroids = [
+            obj for obj in self.game.game_objects
+            if isinstance(obj, Asteroid) and obj.is_alive()
+        ]
+        enemies = [
+            obj for obj in self.game.game_objects
+            if isinstance(obj, (LargeSaucer, SmallSaucer)) and obj.is_alive()
+        ]
+        enemy_bullets = []
+        for enemy in enemies:
+            enemy_bullets.extend(enemy.get_bullets())
+
         # Проверяем коллизии между пулями игрока и врагами
-        if self.player is not None and self.player.is_alive():
+        if player_alive and self.player is not None:
             player_bullets = self.player.get_bullets()
-            asteroids = [
-                obj for obj in self.game.game_objects
-                if isinstance(obj, Asteroid) and obj.is_alive()
-            ]
-            enemies = [
-                obj for obj in self.game.game_objects
-                if isinstance(obj, (LargeSaucer, SmallSaucer)) and obj.is_alive()
-            ]
 
             # Простая проверка коллизий на основе расстояния (радиусная проверка)
             for bullet in player_bullets:
@@ -292,11 +299,7 @@ class PlayingState(BaseState):
             obj.wrap_around_screen(self.game.size)
 
         # Проверяем столкновения игрока и астероидов
-        if self.player is not None and self.player.is_alive():
-            asteroids = [
-                obj for obj in self.game.game_objects
-                if isinstance(obj, Asteroid) and obj.is_alive()
-            ]
+        if player_alive and self.player is not None:
             for asteroid in asteroids:
                 distance = (self.player.position - asteroid.position).length()
                 if distance <= self.player.radius + asteroid.radius:
@@ -314,6 +317,46 @@ class PlayingState(BaseState):
                     # Наносим урон игроку
                     still_alive = self.player.take_damage()
                     if not still_alive:
+                        break
+
+        # Столкновение игрока с вражескими тарелками
+        if player_alive and self.player is not None:
+            for enemy in enemies:
+                if not enemy.is_alive():
+                    continue
+                distance = (self.player.position - enemy.position).length()
+                if distance <= self.player.radius + enemy.radius:
+                    enemy.kill()
+                    points = ScoringSystem.get_points_for_enemy_instance(enemy)
+                    self.score += points
+                    if self.particle_system is not None:
+                        self.particle_system.add_explosion(
+                            enemy.position,
+                            color=pygame.Color("orange"),
+                            particle_count=30,
+                            speed=220.0,
+                            lifetime=0.45
+                        )
+                    if not self.player.take_damage():
+                        break
+
+        # Пули врагов попадают по игроку
+        if player_alive and self.player is not None:
+            for bullet in enemy_bullets:
+                if not bullet.is_alive():
+                    continue
+                distance = (self.player.position - bullet.position).length()
+                if distance <= self.player.radius + bullet.radius:
+                    bullet.kill()
+                    if self.particle_system is not None:
+                        self.particle_system.add_explosion(
+                            self.player.position,
+                            color=pygame.Color("red"),
+                            particle_count=20,
+                            speed=180.0,
+                            lifetime=0.35
+                        )
+                    if not self.player.take_damage():
                         break
 
         # Обновляем графические системы
