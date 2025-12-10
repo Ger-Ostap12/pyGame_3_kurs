@@ -21,7 +21,8 @@ DEATH_SOUND = os.path.join(_MUSIC_DIR, "Castlevania – Death_ Музыка из
 
 def _apply_music_patches() -> None:
     """Автоматически добавить музыку в меню, игру, экран поражения и звук выстрела."""
-    from .states import MenuState, PlayingState, GameOverState
+    from .states import PlayingState
+    from .ui_states import MenuState, GameOverState
     from .player import Player
     
     # === Патч для меню (Imperial March) ===
