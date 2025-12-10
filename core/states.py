@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 
 class GameStateId(Enum):
+    NICKNAME = auto()  # Ввод никнейма (стартовый экран)
     MENU = auto()
     PLAYING = auto()
     GAME_OVER = auto()
@@ -64,32 +65,8 @@ class BaseState(ABC):
         pass
 
 
-class MenuState(BaseState):
-    @property
-    def id(self) -> GameStateId:
-        return GameStateId.MENU
-
-    def handle_event(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                self.game.change_state(GameStateId.PLAYING)
-            elif event.key == pygame.K_ESCAPE:
-                self.game.stop()
-
-    def update(self, dt: float) -> None:
-        pass
-
-    def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
-
-        font = self.game.font
-        title = font.render("ASTEROIDS (MENU)", True, self.game.text_color)
-        hint = font.render("Enter - start, Esc - exit", True, self.game.text_color)
-
-        w, h = self.game.size
-        screen.blit(title, (w // 2 - title.get_width() // 2, h // 3))
-        screen.blit(hint, (w // 2 - hint.get_width() // 2, h // 3 + 30))
+# Импортируем UI-состояния из отдельного файла
+from .ui_states import NicknameState, MenuState, GameOverState
 
 
 class PlayingState(BaseState):
@@ -400,7 +377,8 @@ class PlayingState(BaseState):
                     speed=300.0,
                     lifetime=0.8
                 )
-            # Переходим в Game Over
+            # Сохраняем счёт и переходим в Game Over
+            self.game.last_score = self.score
             self.game.change_state(GameStateId.GAME_OVER)
 
     def draw(self) -> None:
@@ -450,35 +428,3 @@ class PlayingState(BaseState):
             text_surf = font.render(hint, True, pygame.Color("gray"))
             self.game.screen.blit(text_surf, (x, y))
             y += 25
-
-
-class GameOverState(BaseState):
-    @property
-    def id(self) -> GameStateId:
-        return GameStateId.GAME_OVER
-
-    def handle_event(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
-                self.game.change_state(GameStateId.PLAYING)
-            elif event.key == pygame.K_ESCAPE:
-                self.game.change_state(GameStateId.MENU)
-
-    def update(self, dt: float) -> None:
-        pass
-
-    def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
-
-        font = self.game.font
-        title_font = pygame.font.SysFont(FONT_NAME, FONT_SIZE * 2)
-
-        title = title_font.render("GAME OVER", True, pygame.Color("red"))
-        hint1 = font.render("R - restart", True, self.game.text_color)
-        hint2 = font.render("Esc - menu", True, self.game.text_color)
-
-        w, h = self.game.size
-        screen.blit(title, (w // 2 - title.get_width() // 2, h // 3))
-        screen.blit(hint1, (w // 2 - hint1.get_width() // 2, h // 3 + 80))
-        screen.blit(hint2, (w // 2 - hint2.get_width() // 2, h // 3 + 110))
