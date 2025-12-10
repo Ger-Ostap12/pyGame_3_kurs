@@ -16,13 +16,13 @@ class ScoringSystem:
     @staticmethod
     def get_points_for_enemy(enemy_type: type) -> int:
         """
-        Получить количество очков за уничтожение врага.
+        Получить очки за тип врага.
 
         Args:
-            enemy_type: Тип врага (класс)
+            enemy_type: Класс врага.
 
         Returns:
-            Количество очков за уничтожение
+            Очки.
         """
         from enemies import LargeSaucer, SmallSaucer
         from asteroids import Asteroid, AsteroidSize
@@ -40,13 +40,13 @@ class ScoringSystem:
     @staticmethod
     def get_points_for_enemy_instance(enemy) -> int:
         """
-        Получить количество очков за уничтожение врага по экземпляру.
+        Получить очки за экземпляр врага.
 
         Args:
-            enemy: Экземпляр врага
+            enemy: Экземпляр врага.
 
         Returns:
-            Количество очков за уничтожение
+            Очки.
         """
         from asteroids import Asteroid, AsteroidSize
 
@@ -58,4 +58,3 @@ class ScoringSystem:
             return ScoringSystem.SMALL_ASTEROID_POINTS
 
         return ScoringSystem.get_points_for_enemy(type(enemy))
-

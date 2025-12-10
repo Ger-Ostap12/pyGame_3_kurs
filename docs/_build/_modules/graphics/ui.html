@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graphics.ui &mdash; Asteroids Game 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Asteroids Game
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Введение</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">Руководство пользователя</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Документация</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Asteroids Game</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">graphics.ui</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for graphics.ui</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Пользовательский интерфейс: счёт, жизни, следующий уровень.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygame.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vector2</span>
+
+
+<div class="viewcode-block" id="UIManager">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UIManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Менеджер пользовательского интерфейса.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UIManager.__init__">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">screen_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">font_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;consolas&quot;</span><span class="p">,</span>
+        <span class="n">font_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Создать менеджер UI.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            screen_size: Размер экрана</span>
+<span class="sd">            font_name: Имя шрифта</span>
+<span class="sd">            font_size: Размер шрифта</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span> <span class="o">=</span> <span class="n">screen_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">font_name</span><span class="p">,</span> <span class="n">font_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">large_font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">font_name</span><span class="p">,</span> <span class="n">font_size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Игровые данные</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lives</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Очки для перехода на следующий уровень</span></div>
+
+
+<div class="viewcode-block" id="UIManager.set_score">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.set_score">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Установить счёт.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            score: Счёт.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">score</span></div>
+
+
+<div class="viewcode-block" id="UIManager.add_score">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.add_score">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Добавить очки.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            points: Очки.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">+=</span> <span class="n">points</span></div>
+
+
+<div class="viewcode-block" id="UIManager.set_lives">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.set_lives">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_lives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lives</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Установить жизни.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lives: Жизни.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lives</span> <span class="o">=</span> <span class="n">lives</span></div>
+
+
+<div class="viewcode-block" id="UIManager.set_level">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.set_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Установить уровень.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            level: Уровень.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span></div>
+
+
+<div class="viewcode-block" id="UIManager.set_next_level_score">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.set_next_level_score">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_next_level_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Установить очки для следующего уровня.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            score: Очки.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span> <span class="o">=</span> <span class="n">score</span></div>
+
+
+<div class="viewcode-block" id="UIManager.check_level_up">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.check_level_up">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_level_up</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Проверить переход на уровень.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span></div>
+
+
+<div class="viewcode-block" id="UIManager.draw">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать UI.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_draw_score</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_draw_lives</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span></div>
+
+        <span class="c1"># self._draw_level(surface)  # Убрано по запросу</span>
+        <span class="c1"># self._draw_next_level_progress(surface)  # Убрано по запросу</span>
+
+<div class="viewcode-block" id="UIManager._draw_score">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager._draw_score">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать счёт.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Score: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">text_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">score_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">text_surface</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="UIManager._draw_lives">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager._draw_lives">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_lives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать жизни.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lives_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Lives: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lives</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">text_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">lives_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="c1"># Отступ от счёта</span>
+        <span class="n">score_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="n">y_offset</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">score_height</span> <span class="o">+</span> <span class="mi">10</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">text_surface</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+
+        <span class="c1"># Также рисуем иконки жизней (маленькие кораблики)</span>
+        <span class="n">icon_size</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="n">icon_spacing</span> <span class="o">=</span> <span class="mi">25</span>
+        <span class="n">start_x</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="c1"># Отступ от текста жизней</span>
+        <span class="n">start_y</span> <span class="o">=</span> <span class="n">y_offset</span> <span class="o">+</span> <span class="n">text_surface</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>
+
+        <span class="c1"># Максимальное количество жизней для отображения</span>
+        <span class="n">max_lives</span> <span class="o">=</span> <span class="mi">3</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_lives</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">start_x</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">icon_spacing</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">start_y</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lives</span><span class="p">:</span>
+                <span class="c1"># Активная жизнь - красный кораблик</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_draw_life_icon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">icon_size</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">),</span> <span class="n">filled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Потерянная жизнь - черный контур</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_draw_life_icon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">icon_size</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UIManager._draw_life_icon">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager._draw_life_icon">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_life_icon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать иконку жизни.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">            x: X позиция.</span>
+<span class="sd">            y: Y позиция.</span>
+<span class="sd">            size: Размер.</span>
+<span class="sd">            color: Цвет.</span>
+<span class="sd">            filled: Заливка.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span>
+        <span class="c1"># Создаём маленький спрайт корабля</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>  <span class="c1"># Нос</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">size</span><span class="p">),</span>  <span class="c1"># Левый угол</span>
+            <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.75</span><span class="p">),</span>  <span class="c1"># Центр сзади</span>
+            <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">size</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">size</span><span class="p">)</span>  <span class="c1"># Правый угол</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">filled</span><span class="p">:</span>
+            <span class="c1"># Заливка + контур</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">),</span> <span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Только контур</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UIManager._draw_level">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager._draw_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать уровень.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">level_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Level: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">text_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">level_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span><span class="p">)</span>
+
+        <span class="c1"># Размещаем в правом верхнем углу</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_surface</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">-</span> <span class="mi">10</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">text_surface</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="UIManager._draw_next_level_progress">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager._draw_next_level_progress">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_next_level_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать прогресс до уровня.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span><span class="p">:</span>
+            <span class="c1"># Уже достигли следующего уровня</span>
+            <span class="n">progress_text</span> <span class="o">=</span> <span class="s2">&quot;Ready!&quot;</span>
+            <span class="n">text_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">progress_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Показываем прогресс (убираем &quot;Next Level:&quot; чтобы не дублировать)</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span>
+            <span class="n">progress_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">remaining</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> pts&quot;</span>
+            <span class="n">text_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">progress_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+
+        <span class="c1"># Размещаем в правом верхнем углу (так как Level убран)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_surface</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">-</span> <span class="mi">10</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Верхний угол, так как Level больше нет</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">text_surface</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+
+        <span class="c1"># Рисуем прогресс-бар с отступом от текста</span>
+        <span class="n">bar_width</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">bar_height</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="n">bar_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">bar_width</span> <span class="o">-</span> <span class="mi">10</span>
+        <span class="n">bar_y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">text_surface</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>  <span class="c1"># Отступ от текста прогресса</span>
+
+        <span class="c1"># Фон прогресс-бара</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rect</span><span class="p">(</span>
+            <span class="n">surface</span><span class="p">,</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">bar_x</span><span class="p">,</span> <span class="n">bar_y</span><span class="p">,</span> <span class="n">bar_width</span><span class="p">,</span> <span class="n">bar_height</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Заполнение прогресс-бара</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">progress</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span><span class="p">)</span>
+            <span class="n">fill_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bar_width</span> <span class="o">*</span> <span class="n">progress</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fill_width</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rect</span><span class="p">(</span>
+                    <span class="n">surface</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">accent_color</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">bar_x</span><span class="p">,</span> <span class="n">bar_y</span><span class="p">,</span> <span class="n">fill_width</span><span class="p">,</span> <span class="n">bar_height</span><span class="p">)</span>
+                <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UIManager.reset">
+<a class="viewcode-back" href="../../api.html#graphics.ui.UIManager.reset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Сбросить UI.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lives</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_level_score</span> <span class="o">=</span> <span class="mi">1000</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, PROJECTX.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

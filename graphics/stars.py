@@ -61,7 +61,12 @@ class Star:
             self.position.y -= height
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать звезду."""
+        """
+        Отрисовать звезду.
+
+        Args:
+            surface: Поверхность.
+        """
         pygame.draw.circle(
             surface,
             self.color,
@@ -81,7 +86,7 @@ class StarField:
     ):
         """
         Создать поле звёзд.
-        
+
         Args:
             screen_size: Размер экрана
             star_count: Количество звёзд
@@ -127,7 +132,7 @@ class StarField:
     def update(self, dt: float, player_velocity: Vector2) -> None:
         """
         Обновить все звёзды.
-        
+
         Args:
             dt: Дельта времени
             player_velocity: Скорость игрока для параллакса
@@ -136,7 +141,12 @@ class StarField:
             star.update(dt, player_velocity, self.screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать все звёзды."""
+        """
+        Отрисовать все звёзды.
+
+        Args:
+            surface: Поверхность.
+        """
         for star in self.stars:
             star.draw(surface)
 
@@ -164,4 +174,3 @@ class StarField:
                     color=color
                 )
                 self.stars.append(star)
-

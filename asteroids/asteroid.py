@@ -1,3 +1,5 @@
+"""Астероиды."""
+
 from __future__ import annotations
 
 import math
@@ -34,6 +36,15 @@ ASTEROID_CONFIG: dict[AsteroidSize, AsteroidStats] = {
 
 
 def _random_velocity(size: AsteroidSize) -> Vector2:
+    """
+    Сгенерировать скорость.
+
+    Args:
+        size: Размер.
+
+    Returns:
+        Скорость.
+    """
     stats = ASTEROID_CONFIG[size]
     speed = random.uniform(stats.speed_min, stats.speed_max)
     angle = random.uniform(0, math.tau)
@@ -41,7 +52,7 @@ def _random_velocity(size: AsteroidSize) -> Vector2:
 
 
 class Asteroid(GameObject):
-    """Иррегулярный астероид с возможностью делиться на более мелкие."""
+    """Астероид."""
 
     def __init__(
         self,
@@ -51,6 +62,16 @@ class Asteroid(GameObject):
         screen_size: Tuple[int, int],
         seed: Optional[int] = None,
     ) -> None:
+        """
+        Инициализировать астероид.
+
+        Args:
+            position: Позиция.
+            velocity: Скорость.
+            size: Размер.
+            screen_size: Размер экрана.
+            seed: Семя.
+        """
         self.size = size
         self.screen_size = screen_size
         self.random = random.Random(seed)
@@ -71,7 +92,7 @@ class Asteroid(GameObject):
         self.shape_points = self._generate_shape()
 
     def _generate_shape(self) -> List[Vector2]:
-        """Сгенерировать неровный многоугольник для визуализации астероида."""
+        """Сгенерировать форму."""
         stats = ASTEROID_CONFIG[self.size]
         points: List[Vector2] = []
         point_count = 12 if self.size == AsteroidSize.LARGE else 10 if self.size == AsteroidSize.MEDIUM else 8
@@ -85,7 +106,7 @@ class Asteroid(GameObject):
         return points
 
     def split(self) -> List["Asteroid"]:
-        """Создать осколки после разрушения астероида."""
+        """Разделить на осколки."""
         if self.size == AsteroidSize.SMALL:
             return []
 
@@ -108,11 +129,23 @@ class Asteroid(GameObject):
         return fragments
 
     def update(self, dt: float) -> None:
+        """
+        Обновить астероид.
+
+        Args:
+            dt: Дельта времени.
+        """
         self.rotation = (self.rotation + self.rotation_speed * dt) % 360
         super().update(dt)
         self.wrap_around_screen(self.screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
+        """
+        Отрисовать астероид.
+
+        Args:
+            surface: Поверхность.
+        """
         # Поворачиваем предгенерированные точки
         angle_rad = math.radians(self.rotation)
         sin_a, cos_a = math.sin(angle_rad), math.cos(angle_rad)
@@ -126,18 +159,31 @@ class Asteroid(GameObject):
 
 
 class AsteroidField:
-    """Менеджер волн астероидов (large -> medium -> small)."""
+    """Менеджер волн астероидов."""
 
     def __init__(self, screen_size: Tuple[int, int], add_object: Callable[[GameObject], None]) -> None:
+        """
+        Инициализировать поле.
+
+        Args:
+            screen_size: Размер экрана.
+            add_object: Функция добавления объекта.
+        """
         self.screen_size = screen_size
         self.add_object = add_object
         self.level = 1
 
     def reset(self) -> None:
+        """Сбросить поле."""
         self.level = 1
 
     def spawn_wave(self, player_position: Optional[Vector2]) -> None:
-        """Создать новую волну больших астероидов."""
+        """
+        Создать волну.
+
+        Args:
+            player_position: Позиция игрока.
+        """
         base_count = 4 + (self.level - 1)  # Каждая волна становится плотнее
         spawn_count = min(base_count, 10)
 
@@ -152,11 +198,25 @@ class AsteroidField:
             self.add_object(asteroid)
 
     def next_wave(self, player_position: Optional[Vector2]) -> None:
+        """
+        Следующая волна.
+
+        Args:
+            player_position: Позиция игрока.
+        """
         self.level += 1
         self.spawn_wave(player_position)
 
     def _random_edge_position(self, player_position: Optional[Vector2]) -> Vector2:
-        """Спавн у границ экрана с проверкой расстояния до игрока."""
+        """
+        Случайная позиция на краю.
+
+        Args:
+            player_position: Позиция игрока.
+
+        Returns:
+            Позиция.
+        """
         width, height = self.screen_size
         margin = 60
         min_distance = 220
@@ -178,4 +238,3 @@ class AsteroidField:
                 return pos
 
         return Vector2(width / 2, margin)
-

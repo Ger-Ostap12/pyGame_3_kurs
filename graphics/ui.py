@@ -38,49 +38,84 @@ class UIManager:
         self.next_level_score = 1000  # Очки для перехода на следующий уровень
 
     def set_score(self, score: int) -> None:
-        """Установить счёт."""
+        """
+        Установить счёт.
+
+        Args:
+            score: Счёт.
+        """
         self.score = score
 
     def add_score(self, points: int) -> None:
-        """Добавить очки к счёту."""
+        """
+        Добавить очки.
+
+        Args:
+            points: Очки.
+        """
         self.score += points
 
     def set_lives(self, lives: int) -> None:
-        """Установить количество жизней."""
+        """
+        Установить жизни.
+
+        Args:
+            lives: Жизни.
+        """
         self.lives = lives
 
     def set_level(self, level: int) -> None:
-        """Установить уровень."""
+        """
+        Установить уровень.
+
+        Args:
+            level: Уровень.
+        """
         self.level = level
 
     def set_next_level_score(self, score: int) -> None:
-        """Установить количество очков для следующего уровня."""
+        """
+        Установить очки для следующего уровня.
+
+        Args:
+            score: Очки.
+        """
         self.next_level_score = score
 
     def check_level_up(self) -> bool:
-        """
-        Проверить, достигнут ли следующий уровень.
-        
-        Returns:
-            True, если нужно перейти на следующий уровень
-        """
+        """Проверить переход на уровень."""
         return self.score >= self.next_level_score
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать весь UI."""
+        """
+        Отрисовать UI.
+
+        Args:
+            surface: Поверхность.
+        """
         self._draw_score(surface)
         self._draw_lives(surface)
         # self._draw_level(surface)  # Убрано по запросу
         # self._draw_next_level_progress(surface)  # Убрано по запросу
 
     def _draw_score(self, surface: pygame.Surface) -> None:
-        """Отрисовать счёт."""
+        """
+        Отрисовать счёт.
+
+        Args:
+            surface: Поверхность.
+        """
         score_text = f"Score: {self.score:,}"
         text_surface = self.font.render(score_text, True, self.text_color)
         surface.blit(text_surface, (10, 10))
 
     def _draw_lives(self, surface: pygame.Surface) -> None:
-        """Отрисовать количество жизней."""
+        """
+        Отрисовать жизни.
+
+        Args:
+            surface: Поверхность.
+        """
         lives_text = f"Lives: {self.lives}"
         text_surface = self.font.render(lives_text, True, self.text_color)
         # Отступ от счёта
@@ -94,7 +129,7 @@ class UIManager:
         start_x = 10
         # Отступ от текста жизней
         start_y = y_offset + text_surface.get_height() + 10
-        
+
         # Максимальное количество жизней для отображения
         max_lives = 3
 
@@ -109,15 +144,25 @@ class UIManager:
                 self._draw_life_icon(surface, x, y, icon_size, pygame.Color(50, 50, 50), filled=False)
 
     def _draw_life_icon(
-        self, 
-        surface: pygame.Surface, 
-        x: int, 
-        y: int, 
-        size: int, 
+        self,
+        surface: pygame.Surface,
+        x: int,
+        y: int,
+        size: int,
         color: pygame.Color = None,
         filled: bool = True
     ) -> None:
-        """Отрисовать иконку жизни (маленький кораблик)."""
+        """
+        Отрисовать иконку жизни.
+
+        Args:
+            surface: Поверхность.
+            x: X позиция.
+            y: Y позиция.
+            size: Размер.
+            color: Цвет.
+            filled: Заливка.
+        """
         if color is None:
             color = self.text_color
         # Создаём маленький спрайт корабля
@@ -136,16 +181,26 @@ class UIManager:
             pygame.draw.polygon(surface, color, points, 1)
 
     def _draw_level(self, surface: pygame.Surface) -> None:
-        """Отрисовать текущий уровень."""
+        """
+        Отрисовать уровень.
+
+        Args:
+            surface: Поверхность.
+        """
         level_text = f"Level: {self.level}"
         text_surface = self.font.render(level_text, True, self.accent_color)
-        
+
         # Размещаем в правом верхнем углу
         x = self.screen_size[0] - text_surface.get_width() - 10
         surface.blit(text_surface, (x, 10))
 
     def _draw_next_level_progress(self, surface: pygame.Surface) -> None:
-        """Отрисовать прогресс до следующего уровня."""
+        """
+        Отрисовать прогресс до уровня.
+
+        Args:
+            surface: Поверхность.
+        """
         if self.score >= self.next_level_score:
             # Уже достигли следующего уровня
             progress_text = "Ready!"
@@ -186,7 +241,7 @@ class UIManager:
                 )
 
     def reset(self) -> None:
-        """Сбросить UI к начальному состоянию."""
+        """Сбросить UI."""
         self.score = 0
         self.lives = 3
         self.level = 1

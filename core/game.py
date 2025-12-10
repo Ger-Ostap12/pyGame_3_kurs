@@ -1,3 +1,5 @@
+"""Класс игры, управляющий основным циклом, состояниями и ресурсами."""
+
 from __future__ import annotations
 
 from typing import Dict, Tuple, Optional
@@ -21,11 +23,20 @@ from .ui_states import (
 
 
 class Game:
+    """Главный класс игры. Управляет состояниями, основным циклом и ресурсами."""
+
     def __init__(
-        self,
-        size: Tuple[int, int] = WINDOW_SIZE,
-        fps: int = FPS,
+            self,
+            size: Tuple[int, int] = WINDOW_SIZE,
+            fps: int = FPS,
     ) -> None:
+        """
+        Инициализировать игру.
+
+        Args:
+            size: Размер окна.
+            fps: Целевое количество кадров в секунду.
+        """
         self.size = size
         self.fps = fps
 
@@ -45,7 +56,7 @@ class Game:
         # Менеджер игровых объектов
         self.game_objects: list[GameObject] = []
         self.ui_objects: list[GameObject] = []
-        
+
         # Последний счёт (для GameOver)
         self.last_score: int = 0
 
@@ -59,6 +70,7 @@ class Game:
     # --- управление состояниями ---
 
     def _init_states(self) -> None:
+        """Инициализировать все состояния игры."""
         self._states = {
             GameStateId.NICKNAME: NicknameState(self),
             GameStateId.MENU: MenuState(self),
@@ -68,6 +80,12 @@ class Game:
         self.change_state(GameStateId.NICKNAME)
 
     def change_state(self, state_id: GameStateId) -> None:
+        """
+        Переключить состояние игры.
+
+        Args:
+            state_id: Идентификатор нового состояния.
+        """
         if self._current_state is not None:
             self._current_state.exit()
 
@@ -78,16 +96,30 @@ class Game:
     # --- менеджер объектов ---
 
     def add_object(self, obj: GameObject, ui: bool = False) -> None:
+        """
+        Добавить объект в менеджер.
+
+        Args:
+            obj: Игровой объект.
+            ui: Если True, добавляется в UI-объекты.
+        """
         if ui:
             self.ui_objects.append(obj)
         else:
             self.game_objects.append(obj)
 
     def clear_objects(self) -> None:
+        """Очистить все объекты."""
         self.game_objects.clear()
         self.ui_objects.clear()
 
     def update_objects(self, dt: float) -> None:
+        """
+        Обновить все объекты.
+
+        Args:
+            dt: Дельта времени.
+        """
         for obj in self.game_objects:
             if obj.is_alive():
                 obj.update(dt)
@@ -99,6 +131,7 @@ class Game:
         self.ui_objects = [obj for obj in self.ui_objects if obj.is_alive()]
 
     def draw_objects(self) -> None:
+        """Отрисовать все объекты."""
         for obj in self.game_objects:
             obj.draw(self.screen)
         for obj in self.ui_objects:
@@ -107,6 +140,7 @@ class Game:
     # --- основной цикл ---
 
     def run(self) -> None:
+        """Запустить основной игровой цикл."""
         self.running = True
         log("Game loop started")
 
@@ -125,11 +159,13 @@ class Game:
         log("Game loop stopped")
 
     def stop(self) -> None:
+        """Остановить игру."""
         self.running = False
 
     # --- внутренние шаги цикла ---
 
     def _handle_events(self) -> None:
+        """Обработать события."""
         if self._current_state is None:
             return
 
@@ -142,10 +178,17 @@ class Game:
             self._current_state.handle_event(event)
 
     def _update(self, dt: float) -> None:
+        """
+        Обновить логику игры.
+
+        Args:
+            dt: Дельта времени.
+        """
         if self._current_state is not None:
             self._current_state.update(dt)
 
     def _draw(self) -> None:
+        """Отрисовать кадр."""
         if self._current_state is not None:
             self._current_state.draw()
 
@@ -154,11 +197,11 @@ class Game:
     # --- отладочный overlay ---
 
     def _draw_debug_overlay(self) -> None:
-        """Отрисовать только FPS в правом верхнем углу."""
+        """Отрисовать отладочную информацию (FPS, кол-во объектов и т.д.)."""
         try:
             fps_value = self.clock.get_fps()
             fps_text = f"FPS: {fps_value:5.1f}"
-            
+
             # Используем яркий цвет для лучшей видимости
             if fps_value >= 50:
                 fps_color = pygame.Color("lime")
@@ -166,28 +209,28 @@ class Game:
                 fps_color = pygame.Color("yellow")
             else:
                 fps_color = pygame.Color("red")
-            
+
             # Рендерим текст (используем тот же шрифт, что и в игре)
             fps_surf = self.font.render(fps_text, True, fps_color)
-            
+
             if fps_surf is None:
                 # Если шрифт не работает, используем дефолтный
                 default_font = pygame.font.Font(None, 24)
                 fps_surf = default_font.render(fps_text, True, fps_color)
-            
+
             if fps_surf is None:
                 return
-            
+
             # Размещаем в правом верхнем углу (под уровнем)
             x = self.size[0] - fps_surf.get_width() - 10
             y = 80  # Под UI элементами (Score, Lives находятся на 10 и 40)
-            
+
             # Рисуем полупрозрачный фон для лучшей читаемости
             bg_rect = pygame.Rect(x - 5, y - 2, fps_surf.get_width() + 10, fps_surf.get_height() + 4)
             bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
             pygame.draw.rect(bg_surface, (0, 0, 0, 200), (0, 0, bg_rect.width, bg_rect.height))
             self.screen.blit(bg_surface, bg_rect)
-            
+
             # Рисуем FPS поверх фона
             self.screen.blit(fps_surf, (x, y))
         except Exception:

@@ -26,9 +26,17 @@ class LargeSaucer(GameObject):
         screen_size: Tuple[int, int],
         player_position_getter: Optional[Callable[[], Optional[Vector2]]] = None
     ):
+        """
+        Инициализировать большую тарелку.
+
+        Args:
+            position: Позиция.
+            screen_size: Размер экрана.
+            player_position_getter: Getter позиции игрока.
+        """
         # Направление движения (горизонтально)
         direction = Vector2(1, 0) if random.random() < 0.5 else Vector2(-1, 0)
-        
+
         super().__init__(
             position=Vector2(position),
             velocity=direction * self.SPEED,
@@ -64,7 +72,7 @@ class LargeSaucer(GameObject):
 
         # Вычисляем направление к игроку
         direction = player_position - self.position
-        
+
         # Если игрок слишком близко, не стреляем (избегаем деления на ноль)
         if direction.length() < 10:
             return
@@ -78,7 +86,12 @@ class LargeSaucer(GameObject):
         self.shoot_timer = self.SHOOT_COOLDOWN
 
     def update(self, dt: float) -> None:
-        """Обновить состояние тарелки."""
+        """
+        Обновить тарелку.
+
+        Args:
+            dt: Дельта времени.
+        """
         # Обновляем таймер стрельбы
         if self.shoot_timer > 0:
             self.shoot_timer -= dt
@@ -99,7 +112,12 @@ class LargeSaucer(GameObject):
                 bullet.wrap_around_screen(self.screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать тарелку и пули."""
+        """
+        Отрисовать тарелку.
+
+        Args:
+            surface: Поверхность.
+        """
         # Рисуем пули
         for bullet in self.bullets:
             if bullet.is_alive():
@@ -126,11 +144,10 @@ class LargeSaucer(GameObject):
             math.pi,
             3
         )
-        
+
         # Рисуем центр для лучшей видимости
         pygame.draw.circle(surface, pygame.Color("white"), (int(self.position.x), int(self.position.y)), 3)
 
     def get_bullets(self) -> List[LargeEnemyBullet]:
-        """Получить список активных пуль для проверки коллизий."""
+        """Получить активные пули."""
         return [b for b in self.bullets if b.is_alive()]
-

@@ -40,7 +40,12 @@ class Particle:
         self.alive = True
 
     def update(self, dt: float) -> None:
-        """Обновить состояние частицы."""
+        """
+        Обновить частицу.
+
+        Args:
+            dt: Дельта времени.
+        """
         self.position += self.velocity * dt
         self.lifetime -= dt
 
@@ -52,7 +57,12 @@ class Particle:
             self.alive = False
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать частицу."""
+        """
+        Отрисовать частицу.
+
+        Args:
+            surface: Поверхность.
+        """
         if not self.alive:
             return
 
@@ -94,7 +104,7 @@ class Explosion:
     ):
         """
         Создать взрыв.
-        
+
         Args:
             position: Позиция взрыва
             color: Основной цвет взрыва
@@ -142,7 +152,12 @@ class Explosion:
             self.particles.append(particle)
 
     def update(self, dt: float) -> None:
-        """Обновить все частицы взрыва."""
+        """
+        Обновить взрыв.
+
+        Args:
+            dt: Дельта времени.
+        """
         if not self.alive:
             return
 
@@ -153,7 +168,12 @@ class Explosion:
         self.alive = any(p.is_alive() for p in self.particles)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать все частицы взрыва."""
+        """
+        Отрисовать взрыв.
+
+        Args:
+            surface: Поверхность.
+        """
         if not self.alive:
             return
 
@@ -161,7 +181,7 @@ class Explosion:
             particle.draw(surface)
 
     def is_alive(self) -> bool:
-        """Проверить, активен ли взрыв."""
+        """Проверить активность взрыва."""
         return self.alive
 
 
@@ -181,8 +201,8 @@ class ParticleSystem:
         lifetime: float = 0.5
     ) -> None:
         """
-        Добавить взрыв в систему.
-        
+        Добавить взрыв.
+
         Args:
             position: Позиция взрыва
             color: Цвет взрыва
@@ -200,7 +220,12 @@ class ParticleSystem:
         self.explosions.append(explosion)
 
     def update(self, dt: float) -> None:
-        """Обновить все эффекты."""
+        """
+        Обновить систему.
+
+        Args:
+            dt: Дельта времени.
+        """
         for explosion in self.explosions:
             explosion.update(dt)
 
@@ -208,11 +233,15 @@ class ParticleSystem:
         self.explosions = [e for e in self.explosions if e.is_alive()]
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать все эффекты."""
+        """
+        Отрисовать систему.
+
+        Args:
+            surface: Поверхность.
+        """
         for explosion in self.explosions:
             explosion.draw(surface)
 
     def clear(self) -> None:
-        """Очистить все эффекты."""
+        """Очистить систему."""
         self.explosions.clear()
-

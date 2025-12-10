@@ -127,32 +127,40 @@ class ShipSprite:
         center_y: int, 
         size: float
     ) -> None:
-        """Добавить эффект свечения к кораблю."""
+        """
+        Добавить свечение.
+
+        Args:
+            surface: Поверхность.
+            center_x: Центр X.
+            center_y: Центр Y.
+            size: Размер.
+        """
         # Создаем полупрозрачные слои для свечения
         glow_color = pygame.Color(self.color.r, self.color.g, self.color.b, 40)
-        
+
         # Свечение вокруг носа
         nose_glow = (center_x, center_y - size * 0.5)
         pygame.draw.circle(surface, glow_color, nose_glow, int(size * 0.15), 0)
-        
+
         # Свечение вокруг двигателей
         engine_glow_y = center_y + size * 0.5
-        pygame.draw.circle(surface, glow_color, 
-                          (center_x - size * 0.15, engine_glow_y), 
+        pygame.draw.circle(surface, glow_color,
+                          (center_x - size * 0.15, engine_glow_y),
                           int(size * 0.1), 0)
-        pygame.draw.circle(surface, glow_color, 
-                          (center_x + size * 0.15, engine_glow_y), 
+        pygame.draw.circle(surface, glow_color,
+                          (center_x + size * 0.15, engine_glow_y),
                           int(size * 0.1), 0)
 
     def get_rotated_sprite(self, angle: float) -> pygame.Surface:
         """
-        Получить повёрнутый спрайт корабля.
-        
+        Получить повернутый спрайт.
+
         Args:
-            angle: Угол поворота в градусах (0 = вверх)
-            
+            angle: Угол.
+
         Returns:
-            Повёрнутая поверхность
+            Повернутая поверхность.
         """
         # pygame.transform.rotate поворачивает против часовой стрелки
         # Нам нужно повернуть на -angle, так как в игре 0° = вверх
@@ -165,12 +173,12 @@ class ShipSprite:
         angle: float = 0.0
     ) -> None:
         """
-        Отрисовать корабль на поверхности.
-        
+        Отрисовать.
+
         Args:
-            surface: Поверхность для отрисовки
-            position: Позиция корабля
-            angle: Угол поворота в градусах
+            surface: Поверхность.
+            position: Позиция.
+            angle: Угол.
         """
         rotated = self.get_rotated_sprite(angle)
         rect = rotated.get_rect(center=(int(position.x), int(position.y)))
@@ -189,7 +197,7 @@ class AsteroidSprite:
     ):
         """
         Создать спрайт астероида.
-        
+
         Args:
             size: Размер астероида (радиус)
             color: Цвет астероида
@@ -200,7 +208,7 @@ class AsteroidSprite:
         self.color = color
         self.irregularity = irregularity
         self.seed = seed if seed is not None else random.randint(0, 10000)
-        
+
         # Генерируем форму астероида
         self.points = self._generate_points()
         self.base_surface = self._create_base_sprite()
@@ -213,7 +221,7 @@ class AsteroidSprite:
 
         for i in range(num_points):
             angle = (2 * math.pi * i) / num_points
-            
+
             # Базовый радиус с вариацией
             base_radius = self.size
             variation = base_radius * self.irregularity * random.uniform(-1, 1)
@@ -263,10 +271,10 @@ class AsteroidSprite:
     def get_rotated_sprite(self, angle: float) -> pygame.Surface:
         """
         Получить повёрнутый спрайт астероида.
-        
+
         Args:
             angle: Угол поворота в градусах
-            
+
         Returns:
             Повёрнутая поверхность
         """
@@ -280,7 +288,7 @@ class AsteroidSprite:
     ) -> None:
         """
         Отрисовать астероид на поверхности.
-        
+
         Args:
             surface: Поверхность для отрисовки
             position: Позиция астероида
@@ -289,4 +297,3 @@ class AsteroidSprite:
         rotated = self.get_rotated_sprite(angle)
         rect = rotated.get_rect(center=(int(position.x), int(position.y)))
         surface.blit(rotated, rect)
-

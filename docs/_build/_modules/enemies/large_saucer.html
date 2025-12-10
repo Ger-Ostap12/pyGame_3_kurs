@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>enemies.large_saucer &mdash; Asteroids Game 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Asteroids Game
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Введение</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">Руководство пользователя</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Документация</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Asteroids Game</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">enemies.large_saucer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for enemies.large_saucer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Большая тарелка - стреляет в игрока.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygame</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">core.game_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameObject</span><span class="p">,</span> <span class="n">Vector2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.bullet</span><span class="w"> </span><span class="kn">import</span> <span class="n">LargeEnemyBullet</span>
+
+
+<div class="viewcode-block" id="LargeSaucer">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LargeSaucer</span><span class="p">(</span><span class="n">GameObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Большая тарелка - прицельная стрельба в игрока (расчёт направления на основе позиций).&quot;&quot;&quot;</span>
+
+    <span class="n">RADIUS</span> <span class="o">=</span> <span class="mf">25.0</span>  <span class="c1"># Радиус тарелки</span>
+    <span class="n">SPEED</span> <span class="o">=</span> <span class="mf">50.0</span>  <span class="c1"># Скорость движения</span>
+    <span class="n">SHOOT_COOLDOWN</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># секунд между выстрелами (в 2 раза медленнее маленьких)</span>
+    <span class="n">MAX_BULLETS</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Максимальное количество пуль одновременно</span>
+
+<div class="viewcode-block" id="LargeSaucer.__init__">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="n">Vector2</span><span class="p">,</span>
+        <span class="n">screen_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">player_position_getter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Vector2</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Инициализировать большую тарелку.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            position: Позиция.</span>
+<span class="sd">            screen_size: Размер экрана.</span>
+<span class="sd">            player_position_getter: Getter позиции игрока.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Направление движения (горизонтально)</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">Vector2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="k">else</span> <span class="n">Vector2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">position</span><span class="o">=</span><span class="n">Vector2</span><span class="p">(</span><span class="n">position</span><span class="p">),</span>
+            <span class="n">velocity</span><span class="o">=</span><span class="n">direction</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SPEED</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">RADIUS</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span> <span class="o">=</span> <span class="n">screen_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shoot_timer</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SHOOT_COOLDOWN</span><span class="p">)</span>  <span class="c1"># Начальная задержка</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LargeEnemyBullet</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">player_position_getter</span> <span class="o">=</span> <span class="n">player_position_getter</span></div>
+
+
+<div class="viewcode-block" id="LargeSaucer.shoot">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer.shoot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shoot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Выстрелить пулей в направлении игрока.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shoot_timer</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Удаляем мертвые пули</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()]</span>
+
+        <span class="c1"># Если достигли лимита, не стреляем</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bullets</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_BULLETS</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Получаем позицию игрока через getter</span>
+        <span class="n">player_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_position_getter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">player_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_position_getter</span><span class="p">()</span>
+
+        <span class="c1"># Если позиция игрока недоступна, не стреляем</span>
+        <span class="k">if</span> <span class="n">player_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Вычисляем направление к игроку</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">player_position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span>
+
+        <span class="c1"># Если игрок слишком близко, не стреляем (избегаем деления на ноль)</span>
+        <span class="k">if</span> <span class="n">direction</span><span class="o">.</span><span class="n">length</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">direction</span><span class="o">.</span><span class="n">normalize_ip</span><span class="p">()</span>
+
+        <span class="c1"># Стреляем из центра тарелки большой пулей</span>
+        <span class="n">bullet</span> <span class="o">=</span> <span class="n">LargeEnemyBullet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bullet</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shoot_timer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SHOOT_COOLDOWN</span></div>
+
+
+<div class="viewcode-block" id="LargeSaucer.update">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить тарелку.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Обновляем таймер стрельбы</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shoot_timer</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shoot_timer</span> <span class="o">-=</span> <span class="n">dt</span>
+
+        <span class="c1"># Стреляем</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shoot</span><span class="p">()</span>
+
+        <span class="c1"># Обновляем позицию</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+        <span class="c1"># Оборачиваем вокруг экрана</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrap_around_screen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span><span class="p">)</span>
+
+        <span class="c1"># Обновляем пули</span>
+        <span class="k">for</span> <span class="n">bullet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bullet</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                <span class="n">bullet</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+                <span class="n">bullet</span><span class="o">.</span><span class="n">wrap_around_screen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LargeSaucer.draw">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать тарелку.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Рисуем пули</span>
+        <span class="k">for</span> <span class="n">bullet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bullet</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                <span class="n">bullet</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+
+        <span class="c1"># Рисуем тарелку (большой овал) - более заметная</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">RADIUS</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">RADIUS</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RADIUS</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RADIUS</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Закрашиваем тарелку</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">ellipse</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">),</span> <span class="n">rect</span><span class="p">)</span>
+        <span class="c1"># Обводим контуром</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">ellipse</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;gray&quot;</span><span class="p">),</span> <span class="n">rect</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Рисуем купол сверху (более толстый)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">arc</span><span class="p">(</span>
+            <span class="n">surface</span><span class="p">,</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;lightgray&quot;</span><span class="p">),</span>
+            <span class="n">rect</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+            <span class="mi">3</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Рисуем центр для лучшей видимости</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)),</span> <span class="mi">3</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LargeSaucer.get_bullets">
+<a class="viewcode-back" href="../../api.html#enemies.large_saucer.LargeSaucer.get_bullets">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bullets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">LargeEnemyBullet</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Получить активные пули.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bullets</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()]</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, PROJECTX.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

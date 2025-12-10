@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graphics.sprites &mdash; Asteroids Game 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Asteroids Game
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Введение</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">Руководство пользователя</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Документация</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Asteroids Game</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">graphics.sprites</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for graphics.sprites</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Векторные спрайты для корабля и астероидов.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygame.math</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vector2</span>
+
+
+<div class="viewcode-block" id="ShipSprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShipSprite</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Векторный спрайт корабля в стиле полилиний.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ShipSprite.__init__">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span> 
+        <span class="n">color</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">),</span>
+        <span class="n">glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Создать спрайт корабля.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            size: Размер корабля (диаметр)</span>
+<span class="sd">            color: Цвет корабля</span>
+<span class="sd">            glow: Добавить эффект свечения</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">glow</span> <span class="o">=</span> <span class="n">glow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_base_sprite</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ShipSprite._create_base_sprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite._create_base_sprite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_base_sprite</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Создать базовый спрайт корабля с детализированным дизайном.&quot;&quot;&quot;</span>
+        <span class="c1"># Создаем поверхность с альфа-каналом</span>
+        <span class="n">surface_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">)</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">((</span><span class="n">surface_size</span><span class="p">,</span> <span class="n">surface_size</span><span class="p">),</span> <span class="n">pygame</span><span class="o">.</span><span class="n">SRCALPHA</span><span class="p">)</span>
+
+        <span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">=</span> <span class="n">surface_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">surface_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># Определяем точки для корабля (более детализированная форма)</span>
+        <span class="c1"># Нос корабля (острый, вверх)</span>
+        <span class="n">nose</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># Верхние точки корпуса (крылья)</span>
+        <span class="n">left_wing_top</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">right_wing_top</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1"># Боковые точки кормы</span>
+        <span class="n">left_wing_bottom</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">right_wing_bottom</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">)</span>
+
+        <span class="c1"># Центр кормы (двигатель)</span>
+        <span class="n">center_back</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># Основной контур корабля</span>
+        <span class="n">main_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">nose</span><span class="p">,</span> <span class="n">left_wing_top</span><span class="p">,</span> <span class="n">left_wing_bottom</span><span class="p">,</span> <span class="n">center_back</span><span class="p">,</span> 
+                      <span class="n">right_wing_bottom</span><span class="p">,</span> <span class="n">right_wing_top</span><span class="p">,</span> <span class="n">nose</span><span class="p">]</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">lines</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">main_points</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Внутренние линии для детализации</span>
+        <span class="c1"># Линия от носа к корме</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">nose</span><span class="p">,</span> <span class="n">center_back</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># Горизонтальные линии на корпусе</span>
+        <span class="n">mid_y</span> <span class="o">=</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> 
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">mid_y</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">mid_y</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Окно кабины (ромбовидное)</span>
+        <span class="n">window_points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">),</span>  <span class="c1"># Верх</span>
+            <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span>  <span class="c1"># Лево</span>
+            <span class="p">(</span><span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">),</span>  <span class="c1"># Низ</span>
+            <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span>  <span class="c1"># Право</span>
+        <span class="p">]</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">window_points</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># Внутренняя заливка окна (полупрозрачная)</span>
+        <span class="n">window_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">window_color</span><span class="p">,</span> <span class="n">window_points</span><span class="p">)</span>
+
+        <span class="c1"># Двигатели на корме (два сопла)</span>
+        <span class="n">engine_left</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">)</span>
+        <span class="n">engine_right</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">)</span>
+        
+        <span class="c1"># Сопла двигателей</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">engine_left</span><span class="p">,</span> <span class="n">center_back</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">engine_right</span><span class="p">,</span> <span class="n">center_back</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># Внутренние линии сопел</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.3</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.3</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Панели на крыльях</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">,</span> <span class="n">center_y</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">,</span> <span class="n">center_y</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Декоративные точки на корпусе</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> 
+                          <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> 
+                          <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Эффект свечения (если включен)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">glow</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_glow_effect</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">surface</span></div>
+
+
+<div class="viewcode-block" id="ShipSprite._add_glow_effect">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite._add_glow_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_glow_effect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">,</span> 
+        <span class="n">center_x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+        <span class="n">center_y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Добавить свечение.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">            center_x: Центр X.</span>
+<span class="sd">            center_y: Центр Y.</span>
+<span class="sd">            size: Размер.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Создаем полупрозрачные слои для свечения</span>
+        <span class="n">glow_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+
+        <span class="c1"># Свечение вокруг носа</span>
+        <span class="n">nose_glow</span> <span class="o">=</span> <span class="p">(</span><span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">glow_color</span><span class="p">,</span> <span class="n">nose_glow</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Свечение вокруг двигателей</span>
+        <span class="n">engine_glow_y</span> <span class="o">=</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">glow_color</span><span class="p">,</span>
+                          <span class="p">(</span><span class="n">center_x</span> <span class="o">-</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">engine_glow_y</span><span class="p">),</span>
+                          <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">glow_color</span><span class="p">,</span>
+                          <span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">engine_glow_y</span><span class="p">),</span>
+                          <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShipSprite.get_rotated_sprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite.get_rotated_sprite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rotated_sprite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Получить повернутый спрайт.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: Угол.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Повернутая поверхность.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pygame.transform.rotate поворачивает против часовой стрелки</span>
+        <span class="c1"># Нам нужно повернуть на -angle, так как в игре 0° = вверх</span>
+        <span class="k">return</span> <span class="n">pygame</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_surface</span><span class="p">,</span> <span class="o">-</span><span class="n">angle</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShipSprite.draw">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.ShipSprite.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="n">Vector2</span><span class="p">,</span>
+        <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность.</span>
+<span class="sd">            position: Позиция.</span>
+<span class="sd">            angle: Угол.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rotated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rotated_sprite</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="n">rotated</span><span class="o">.</span><span class="n">get_rect</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)))</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">rotated</span><span class="p">,</span> <span class="n">rect</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AsteroidSprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AsteroidSprite</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Векторный спрайт астероида в стиле полилиний.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AsteroidSprite.__init__">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">),</span>
+        <span class="n">irregularity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Создать спрайт астероида.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            size: Размер астероида (радиус)</span>
+<span class="sd">            color: Цвет астероида</span>
+<span class="sd">            irregularity: Коэффициент неправильности формы (0.0-1.0)</span>
+<span class="sd">            seed: Семя для генерации формы (для воспроизводимости)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">irregularity</span> <span class="o">=</span> <span class="n">irregularity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+
+        <span class="c1"># Генерируем форму астероида</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_points</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_base_sprite</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AsteroidSprite._generate_points">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite._generate_points">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Сгенерировать точки для неправильной формы астероида.&quot;&quot;&quot;</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>  <span class="c1"># Количество вершин</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_points</span>
+
+            <span class="c1"># Базовый радиус с вариацией</span>
+            <span class="n">base_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">variation</span> <span class="o">=</span> <span class="n">base_radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">irregularity</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">base_radius</span> <span class="o">+</span> <span class="n">variation</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>  <span class="c1"># Сбрасываем seed</span>
+        <span class="k">return</span> <span class="n">points</span></div>
+
+
+<div class="viewcode-block" id="AsteroidSprite._create_base_sprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite._create_base_sprite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_base_sprite</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Создать базовый спрайт астероида.&quot;&quot;&quot;</span>
+        <span class="c1"># Создаем поверхность с альфа-каналом</span>
+        <span class="n">surface_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">)</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">((</span><span class="n">surface_size</span><span class="p">,</span> <span class="n">surface_size</span><span class="p">),</span> <span class="n">pygame</span><span class="o">.</span><span class="n">SRCALPHA</span><span class="p">)</span>
+
+        <span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">=</span> <span class="n">surface_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">surface_size</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="c1"># Смещаем точки относительно центра</span>
+        <span class="n">screen_points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">center_x</span> <span class="o">+</span> <span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">center_y</span> <span class="o">+</span> <span class="n">y</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Рисуем контур астероида (полилиния)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">lines</span><span class="p">(</span>
+            <span class="n">surface</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="n">screen_points</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">2</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Добавляем несколько внутренних линий для детализации</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">screen_points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># Рисуем несколько случайных линий внутри</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="n">p1</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">screen_points</span><span class="p">)</span>
+                <span class="n">p2</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">screen_points</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">p1</span> <span class="o">!=</span> <span class="n">p2</span><span class="p">:</span>
+                    <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">surface</span></div>
+
+
+<div class="viewcode-block" id="AsteroidSprite.get_rotated_sprite">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite.get_rotated_sprite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rotated_sprite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Получить повёрнутый спрайт астероида.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: Угол поворота в градусах</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Повёрнутая поверхность</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pygame</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_surface</span><span class="p">,</span> <span class="o">-</span><span class="n">angle</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsteroidSprite.draw">
+<a class="viewcode-back" href="../../api.html#graphics.sprites.AsteroidSprite.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">surface</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="n">Vector2</span><span class="p">,</span>
+        <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Отрисовать астероид на поверхности.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            surface: Поверхность для отрисовки</span>
+<span class="sd">            position: Позиция астероида</span>
+<span class="sd">            angle: Угол поворота в градусах</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rotated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rotated_sprite</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="n">rotated</span><span class="o">.</span><span class="n">get_rect</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)))</span>
+        <span class="n">surface</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">rotated</span><span class="p">,</span> <span class="n">rect</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, PROJECTX.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

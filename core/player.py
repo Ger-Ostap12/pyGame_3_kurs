@@ -1,3 +1,5 @@
+"""Классы для игрока и его пуль."""
+
 from __future__ import annotations
 
 import math
@@ -10,9 +12,8 @@ from core.game_object import GameObject, Vector2
 from core.input import Input
 from graphics.sprites import ShipSprite
 
-
 class Bullet(GameObject):
-    """Класс пули игрока."""
+    """Пуля игрока."""
 
     SPEED = 500.0  # Скорость пули в пикселях/сек
     LIFETIME = 1.5  # Время жизни пули в секундах
@@ -27,13 +28,24 @@ class Bullet(GameObject):
         self.lifetime = self.LIFETIME
 
     def update(self, dt: float) -> None:
+        """
+        Обновить пулю.
+
+        Args:
+            dt: Дельта времени.
+        """
         super().update(dt)
         self.lifetime -= dt
         if self.lifetime <= 0:
             self.kill()
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Рисуем пулю как белый круг."""
+        """
+        Отрисовать пулю.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
         pygame.draw.circle(
             surface,
             pygame.Color("white"),
@@ -41,16 +53,27 @@ class Bullet(GameObject):
             int(self.RADIUS)
         )
 
-
 class BulletPool:
     """Пул пуль для оптимизации."""
 
     def __init__(self, max_bullets: int = 10):
+        """
+        Инициализировать пул.
+
+        Args:
+            max_bullets: Максимальное количество пуль.
+        """
         self.max_bullets = max_bullets
         self.bullets: List[Bullet] = []
 
     def shoot(self, position: Vector2, direction: Vector2) -> None:
-        """Выпустить пулю из заданной позиции в заданном направлении."""
+        """
+        Выпустить пулю.
+
+        Args:
+            position: Позиция.
+            direction: Направление.
+        """
         # Удаляем мертвые пули
         self.bullets = [b for b in self.bullets if b.is_alive()]
 
@@ -62,29 +85,39 @@ class BulletPool:
         self.bullets.append(bullet)
 
     def update(self, dt: float, screen_size: Tuple[int, int]) -> None:
-        """Обновить все активные пули."""
+        """
+        Обновить пули.
+
+        Args:
+            dt: Дельта времени.
+            screen_size: Размер экрана.
+        """
         for bullet in self.bullets:
             if bullet.is_alive():
                 bullet.update(dt)
                 bullet.wrap_around_screen(screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать все активные пули."""
+        """
+        Отрисовать пули.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
         for bullet in self.bullets:
             if bullet.is_alive():
                 bullet.draw(surface)
 
     def get_active_bullets(self) -> List[Bullet]:
-        """Получить список активных пуль."""
+        """Получить активные пули."""
         return [b for b in self.bullets if b.is_alive()]
 
     def clear(self) -> None:
-        """Очистить все пули."""
+        """Очистить пули."""
         self.bullets.clear()
 
-
 class Player(GameObject):
-    """Класс игрока - космический корабль."""
+    """Космический корабль игрока."""
 
     # Константы управления
     ROTATION_SPEED = 200.0  # градусов в секунду
@@ -104,6 +137,13 @@ class Player(GameObject):
     RESPAWN_INVINCIBILITY = 2.0  # секунд неуязвимости после респауна
 
     def __init__(self, position: Vector2, screen_size: Tuple[int, int]):
+        """
+        Инициализировать игрока.
+
+        Args:
+            position: Позиция.
+            screen_size: Размер экрана.
+        """
         super().__init__(
             position=Vector2(position),
             velocity=Vector2(0, 0),
@@ -122,7 +162,13 @@ class Player(GameObject):
         self.ship_sprite = ShipSprite(size=self.RADIUS * 2.5, color=pygame.Color("white"))
 
     def handle_input(self, input_manager: Input, dt: float) -> None:
-        """Обработать ввод от игрока."""
+        """
+        Обработать ввод.
+
+        Args:
+            input_manager: Менеджер ввода.
+            dt: Дельта времени.
+        """
         # Поворот влево (стрелка влево, A)
         if input_manager.is_pressed(pygame.K_LEFT) or input_manager.is_pressed(pygame.K_a):
             self.rotate(-self.ROTATION_SPEED * dt)
@@ -144,7 +190,12 @@ class Player(GameObject):
             self.hyperspace()
 
     def thrust(self, dt: float) -> None:
-        """Ускорение корабля в направлении его носа."""
+        """
+        Ускорить корабль.
+
+        Args:
+            dt: Дельта времени.
+        """
         # Вычисляем направление (rotation в градусах, 0° = вверх)
         angle_rad = math.radians(self.rotation - 90)  # -90 чтобы 0° был вверх
         direction = Vector2(math.cos(angle_rad), math.sin(angle_rad))
@@ -157,7 +208,7 @@ class Player(GameObject):
             self.velocity.scale_to_length(self.MAX_SPEED)
 
     def shoot(self) -> None:
-        """Выстрелить пулей."""
+        """Выстрелить."""
         if self.shoot_timer > 0:
             return
 
@@ -173,7 +224,7 @@ class Player(GameObject):
         self.shoot_timer = self.SHOOT_COOLDOWN
 
     def hyperspace(self) -> None:
-        """Телепортировать корабль в случайное место."""
+        """Телепортировать в случайное место."""
         if self.hyperspace_timer > 0:
             return
 
@@ -187,7 +238,12 @@ class Player(GameObject):
         self.hyperspace_timer = self.HYPERSPACE_COOLDOWN
 
     def update(self, dt: float) -> None:
-        """Обновить состояние игрока."""
+        """
+        Обновить игрока.
+
+        Args:
+            dt: Дельта времени.
+        """
         # Обновляем таймеры
         if self.shoot_timer > 0:
             self.shoot_timer -= dt
@@ -209,7 +265,12 @@ class Player(GameObject):
         self.bullet_pool.update(dt, self.screen_size)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Отрисовать корабль и пули."""
+        """
+        Отрисовать игрока.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
         # Рисуем пули
         self.bullet_pool.draw(surface)
 
@@ -221,15 +282,25 @@ class Player(GameObject):
             self._draw_ship(surface)
 
     def _draw_ship(self, surface: pygame.Surface) -> None:
-        """Отрисовать корабль с учетом поворота используя ShipSprite."""
+        """
+        Отрисовать корабль.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
         self.ship_sprite.draw(surface, self.position, self.rotation)
 
     def is_invincible(self) -> bool:
-        """Проверить, неуязвим ли игрок."""
+        """Проверить неуязвимость."""
         return self.invincibility_timer > 0
 
     def take_damage(self) -> bool:
-        """Получить урон. Возвращает True, если игрок все еще жив."""
+        """
+        Получить урон.
+
+        Returns:
+            True, если игрок жив.
+        """
         if self.is_invincible():
             return True
 
@@ -243,7 +314,7 @@ class Player(GameObject):
             return False
 
     def respawn(self) -> None:
-        """Возродить игрока в центре экрана."""
+        """Возродить игрока."""
         self.position.x = self.screen_size[0] / 2
         self.position.y = self.screen_size[1] / 2
         self.velocity = Vector2(0, 0)
@@ -252,10 +323,10 @@ class Player(GameObject):
         self.bullet_pool.clear()
 
     def get_bullets(self) -> List[Bullet]:
-        """Получить список активных пуль для проверки коллизий."""
+        """Получить активные пули."""
         return self.bullet_pool.get_active_bullets()
 
     def reset(self) -> None:
-        """Сбросить игрока к начальному состоянию."""
+        """Сбросить игрока."""
         self.lives = self.INITIAL_LIVES
         self.respawn()

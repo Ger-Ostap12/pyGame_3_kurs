@@ -1,3 +1,5 @@
+"""Менеджер ввода."""
+
 from __future__ import annotations
 
 from typing import Set
@@ -12,6 +14,7 @@ class Input:
     """
 
     def __init__(self) -> None:
+        """Инициализировать менеджер ввода."""
         self._pressed: Set[int] = set()
         self._just_pressed: Set[int] = set()
 
@@ -20,6 +23,12 @@ class Input:
         self._just_pressed.clear()
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        """
+        Обработать событие.
+
+        Args:
+            event: Событие pygame.
+        """
         if event.type == pygame.KEYDOWN:
             key = event.key
             self._pressed.add(key)
@@ -29,7 +38,25 @@ class Input:
             self._pressed.discard(key)
 
     def is_pressed(self, key: int) -> bool:
+        """
+        Проверить, нажата ли клавиша.
+
+        Args:
+            key: Код клавиши.
+
+        Returns:
+            True, если клавиша нажата.
+        """
         return key in self._pressed
 
     def was_pressed(self, key: int) -> bool:
+        """
+        Проверить, была ли клавиша нажата в этом кадре.
+
+        Args:
+            key: Код клавиши.
+
+        Returns:
+            True, если клавиша была нажата в этом кадре.
+        """
         return key in self._just_pressed

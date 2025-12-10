@@ -1,3 +1,5 @@
+"""Проверка коллизий."""
+
 from __future__ import annotations
 
 from typing import Callable, Iterable, List, Tuple
@@ -8,7 +10,16 @@ from .game_object import GameObject
 
 
 def rects_collide(rect_a: pygame.Rect, rect_b: pygame.Rect) -> bool:
-    """Проверка пересечения двух прямоугольников."""
+    """
+    Проверить пересечение прямоугольников.
+
+    Args:
+        rect_a: Первый прямоугольник.
+        rect_b: Второй прямоугольник.
+
+    Returns:
+        True, если пересекаются.
+    """
     return rect_a.colliderect(rect_b)
 
 
@@ -17,7 +28,17 @@ def masks_collide(
     mask_b: pygame.Mask,
     offset: Tuple[int, int],
 ) -> bool:
-    """Проверка пересечения двух масок с учётом смещения."""
+    """
+    Проверить пересечение масок.
+
+    Args:
+        mask_a: Первая маска.
+        mask_b: Вторая маска.
+        offset: Смещение.
+
+    Returns:
+        True, если пересекаются.
+    """
     return mask_a.overlap(mask_b, offset) is not None
 
 
@@ -27,9 +48,12 @@ def check_collisions(
     on_hit: Callable[[GameObject, GameObject], None],
 ) -> None:
     """
-    Перебрать объекты двух групп и вызвать on_hit(a, b), если они столкнулись.
+    Проверить коллизии между группами.
 
-    Сначала используется проверка по Rect, при наличии масок — уточнение по маскам.
+    Args:
+        group_a: Первая группа.
+        group_b: Вторая группа.
+        on_hit: Callback при коллизии.
     """
     list_a: List[GameObject] = [obj for obj in group_a if obj.is_alive()]
     list_b: List[GameObject] = [obj for obj in group_b if obj.is_alive()]

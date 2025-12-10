@@ -1,0 +1,458 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.ui_states &mdash; Asteroids Game 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Asteroids Game
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Введение</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">Руководство пользователя</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Документация</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Asteroids Game</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">core.ui_states</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for core.ui_states</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;UI-состояния игры: ввод никнейма, меню, экран поражения.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygame</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.database</span><span class="w"> </span><span class="kn">import</span> <span class="n">db</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.game</span><span class="w"> </span><span class="kn">import</span> <span class="n">Game</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+
+
+<div class="viewcode-block" id="NicknameState">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NicknameState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Состояние ввода никнейма (стартовый экран).&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="NicknameState.__init__">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game</span><span class="p">:</span> <span class="n">Game</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game</span> <span class="o">=</span> <span class="n">game</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_length</span> <span class="o">=</span> <span class="mi">15</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor_visible</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor_timer</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">return</span> <span class="n">GameStateId</span><span class="o">.</span><span class="n">NICKNAME</span>
+    
+<div class="viewcode-block" id="NicknameState.enter">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.enter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При входе сбрасываем никнейм.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor_visible</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor_timer</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+    
+<div class="viewcode-block" id="NicknameState.exit">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.exit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При выходе ничего не делаем.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NicknameState.handle_event">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.handle_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обработать событие.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event: Событие pygame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">KEYDOWN</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_RETURN</span><span class="p">:</span>
+                <span class="c1"># Подтверждение никнейма</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">set_current_player</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">change_state</span><span class="p">(</span><span class="n">GameStateId</span><span class="o">.</span><span class="n">MENU</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_BACKSPACE</span><span class="p">:</span>
+                <span class="c1"># Удаление символа</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_ESCAPE</span><span class="p">:</span>
+                <span class="c1"># Выход из игры</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Добавление символа</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_length</span><span class="p">:</span>
+                    <span class="n">char</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">unicode</span>
+                    <span class="c1"># Разрешаем только буквы, цифры и некоторые символы</span>
+                    <span class="k">if</span> <span class="n">char</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">char</span> <span class="ow">in</span> <span class="s2">&quot;_-&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">+=</span> <span class="n">char</span></div>
+
+
+<div class="viewcode-block" id="NicknameState.update">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить состояние.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Мигание курсора</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor_timer</span> <span class="o">+=</span> <span class="n">dt</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor_timer</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cursor_timer</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cursor_visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor_visible</span></div>
+
+
+<div class="viewcode-block" id="NicknameState.draw">
+<a class="viewcode-back" href="../../api.html#core.ui_states.NicknameState.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать состояние.&quot;&quot;&quot;</span>
+        <span class="n">screen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">screen</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">bg_color</span><span class="p">)</span>
+
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># Заголовок</span>
+        <span class="n">title_font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title_font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;ASTEROIDS&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">title</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="c1"># Подзаголовок</span>
+        <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">font</span>
+        <span class="n">subtitle</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Enter your nickname:&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">subtitle</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">subtitle</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">50</span><span class="p">))</span>
+
+        <span class="c1"># Поле ввода никнейма</span>
+        <span class="n">input_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor_visible</span><span class="p">:</span>
+            <span class="n">input_text</span> <span class="o">+=</span> <span class="s2">&quot;_&quot;</span>
+
+        <span class="c1"># Рамка для ввода</span>
+        <span class="n">input_width</span> <span class="o">=</span> <span class="mi">300</span>
+        <span class="n">input_height</span> <span class="o">=</span> <span class="mi">40</span>
+        <span class="n">input_x</span> <span class="o">=</span> <span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">input_width</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">input_y</span> <span class="o">=</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rect</span><span class="p">(</span><span class="n">screen</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">input_x</span><span class="p">,</span> <span class="n">input_y</span><span class="p">,</span> <span class="n">input_width</span><span class="p">,</span> <span class="n">input_height</span><span class="p">))</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rect</span><span class="p">(</span><span class="n">screen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">input_x</span><span class="p">,</span> <span class="n">input_y</span><span class="p">,</span> <span class="n">input_width</span><span class="p">,</span> <span class="n">input_height</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Текст никнейма</span>
+        <span class="n">nickname_surface</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">input_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;green&quot;</span><span class="p">))</span>
+        <span class="n">text_x</span> <span class="o">=</span> <span class="n">input_x</span> <span class="o">+</span> <span class="mi">10</span>
+        <span class="n">text_y</span> <span class="o">=</span> <span class="n">input_y</span> <span class="o">+</span> <span class="p">(</span><span class="n">input_height</span> <span class="o">-</span> <span class="n">nickname_surface</span><span class="o">.</span><span class="n">get_height</span><span class="p">())</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">nickname_surface</span><span class="p">,</span> <span class="p">(</span><span class="n">text_x</span><span class="p">,</span> <span class="n">text_y</span><span class="p">))</span>
+
+        <span class="c1"># Подсказки</span>
+        <span class="n">hint1</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Enter - confirm&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;gray&quot;</span><span class="p">))</span>
+        <span class="n">hint2</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Esc - exit&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;gray&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint1</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint1</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">80</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint2</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint2</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">110</span><span class="p">))</span>
+
+        <span class="c1"># Таблица лидеров</span>
+        <span class="n">leaderboard</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_leaderboard</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">leaderboard</span><span class="p">:</span>
+            <span class="n">lb_title</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;TOP 5:&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
+            <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">lb_title</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">lb_title</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">160</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">leaderboard</span><span class="p">):</span>
+                <span class="n">lb_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+                <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">lb_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">lb_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">190</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">25</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MenuState">
+<a class="viewcode-back" href="../../api.html#core.ui_states.MenuState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MenuState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Состояние главного меню.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MenuState.__init__">
+<a class="viewcode-back" href="../../api.html#core.ui_states.MenuState.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game</span><span class="p">:</span> <span class="n">Game</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game</span> <span class="o">=</span> <span class="n">game</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">return</span> <span class="n">GameStateId</span><span class="o">.</span><span class="n">MENU</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">enter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При входе ничего не делаем.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При выходе ничего не делаем.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="MenuState.handle_event">
+<a class="viewcode-back" href="../../api.html#core.ui_states.MenuState.handle_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обработать событие.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event: Событие pygame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">KEYDOWN</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_RETURN</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">change_state</span><span class="p">(</span><span class="n">GameStateId</span><span class="o">.</span><span class="n">PLAYING</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_ESCAPE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MenuState.update">
+<a class="viewcode-back" href="../../api.html#core.ui_states.MenuState.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить состояние.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MenuState.draw">
+<a class="viewcode-back" href="../../api.html#core.ui_states.MenuState.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать состояние.&quot;&quot;&quot;</span>
+        <span class="n">screen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">screen</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">bg_color</span><span class="p">)</span>
+
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># Заголовок</span>
+        <span class="n">title_font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title_font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;ASTEROIDS&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">title</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">font</span>
+
+        <span class="c1"># Информация об игроке</span>
+        <span class="n">player_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_current_player</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;Unknown&quot;</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span>
+
+        <span class="n">player_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Player: </span><span class="si">{</span><span class="n">player_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;cyan&quot;</span><span class="p">))</span>
+        <span class="n">best_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best Score: </span><span class="si">{</span><span class="n">best_score</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
+
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">player_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">player_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">30</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">best_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">best_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># Подсказки</span>
+        <span class="n">hint1</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Enter - start game&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">hint2</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Esc - exit&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint1</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint1</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint2</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint2</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">90</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GameOverState">
+<a class="viewcode-back" href="../../api.html#core.ui_states.GameOverState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GameOverState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Состояние экрана поражения.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GameOverState.__init__">
+<a class="viewcode-back" href="../../api.html#core.ui_states.GameOverState.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game</span><span class="p">:</span> <span class="n">Game</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game</span> <span class="o">=</span> <span class="n">game</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_new_record</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_score</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">return</span> <span class="n">GameStateId</span><span class="o">.</span><span class="n">GAME_OVER</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">enter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При входе сохраняем результат в базу данных.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">last_score</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_new_record</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">save_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_score</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_score</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;При выходе ничего не делаем.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="GameOverState.handle_event">
+<a class="viewcode-back" href="../../api.html#core.ui_states.GameOverState.handle_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обработать событие.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event: Событие pygame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameStateId</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">KEYDOWN</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_r</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">change_state</span><span class="p">(</span><span class="n">GameStateId</span><span class="o">.</span><span class="n">PLAYING</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_ESCAPE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">change_state</span><span class="p">(</span><span class="n">GameStateId</span><span class="o">.</span><span class="n">MENU</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GameOverState.update">
+<a class="viewcode-back" href="../../api.html#core.ui_states.GameOverState.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить состояние.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="GameOverState.draw">
+<a class="viewcode-back" href="../../api.html#core.ui_states.GameOverState.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать состояние.&quot;&quot;&quot;</span>
+        <span class="n">screen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">screen</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">bg_color</span><span class="p">)</span>
+
+        <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">font</span>
+        <span class="n">title_font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">y_offset</span> <span class="o">=</span> <span class="n">h</span> <span class="o">//</span> <span class="mi">4</span>
+
+        <span class="c1"># Заголовок</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title_font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;GAME OVER&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">title</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+        <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">80</span>
+
+        <span class="c1"># Никнейм игрока</span>
+        <span class="n">player_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_current_player</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;Unknown&quot;</span>
+        <span class="n">player_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Player: </span><span class="si">{</span><span class="n">player_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;cyan&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">player_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">player_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+        <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">40</span>
+
+        <span class="c1"># Финальный счёт</span>
+        <span class="n">score_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Score: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">final_score</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">score_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">score_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+        <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">40</span>
+
+        <span class="c1"># Лучший результат</span>
+        <span class="n">best_text</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">best_score</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">best_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">best_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+        <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">40</span>
+
+        <span class="c1"># Новый рекорд!</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_new_record</span><span class="p">:</span>
+            <span class="n">record_text</span> <span class="o">=</span> <span class="n">title_font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;NEW RECORD!&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;gold&quot;</span><span class="p">))</span>
+            <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">record_text</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">record_text</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+            <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">60</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_offset</span> <span class="o">+=</span> <span class="mi">30</span>
+
+        <span class="c1"># Подсказки</span>
+        <span class="n">hint1</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;R - restart&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">hint2</span> <span class="o">=</span> <span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;Esc - menu&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint1</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint1</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">))</span>
+        <span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">hint2</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">hint2</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">+</span> <span class="mi">30</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, PROJECTX.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

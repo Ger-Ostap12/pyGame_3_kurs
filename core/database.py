@@ -55,16 +55,21 @@ class Database:
         conn.close()
     
     def set_current_player(self, nickname: str) -> None:
-        """Установить текущего игрока (создать если не существует)."""
+        """
+        Установить текущего игрока.
+
+        Args:
+            nickname: Никнейм.
+        """
         self.current_player = nickname
-        
+
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         # Проверяем существует ли игрок
         cursor.execute('SELECT id FROM players WHERE nickname = ?', (nickname,))
         result = cursor.fetchone()
-        
+
         if result is None:
             # Создаём нового игрока
             cursor.execute(
@@ -72,40 +77,43 @@ class Database:
                 (nickname,)
             )
             conn.commit()
-        
+
         conn.close()
-    
+
     def get_current_player(self) -> Optional[str]:
-        """Получить никнейм текущего игрока."""
+        """Получить текущего игрока."""
         return self.current_player
-    
+
     def save_score(self, score: int) -> bool:
         """
-        Сохранить результат игры. Обновляет best_score если новый результат лучше.
-        
+        Сохранить счёт.
+
+        Args:
+            score: Счёт.
+
         Returns:
-            True если это новый рекорд, False иначе
+            True если новый рекорд.
         """
         if self.current_player is None:
             return False
-        
+
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         # Получаем текущий лучший результат
         cursor.execute(
             'SELECT best_score FROM players WHERE nickname = ?',
             (self.current_player,)
         )
         result = cursor.fetchone()
-        
+
         if result is None:
             conn.close()
             return False
-        
+
         current_best = result[0]
         is_new_record = score > current_best
-        
+
         # Обновляем статистику
         if is_new_record:
             cursor.execute(
@@ -117,61 +125,84 @@ class Database:
                 'UPDATE players SET games_played = games_played + 1 WHERE nickname = ?',
                 (self.current_player,)
             )
-        
+
         conn.commit()
         conn.close()
-        
+
         return is_new_record
-    
+
     def get_best_score(self, nickname: Optional[str] = None) -> int:
-        """Получить лучший результат игрока."""
+        """
+        Получить лучший счёт.
+
+        Args:
+            nickname: Никнейм (опционально).
+
+        Returns:
+            Лучший счёт.
+        """
         if nickname is None:
             nickname = self.current_player
-        
+
         if nickname is None:
             return 0
-        
+
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute(
             'SELECT best_score FROM players WHERE nickname = ?',
             (nickname,)
         )
         result = cursor.fetchone()
-        
+
         conn.close()
-        
+
         return result[0] if result else 0
-    
+
     def get_leaderboard(self, limit: int = 10) -> List[Tuple[str, int]]:
-        """Получить таблицу лидеров (только игроки с результатом > 0)."""
+        """
+        Получить таблицу лидеров.
+
+        Args:
+            limit: Лимит записей.
+
+        Returns:
+            Список (ник, счёт).
+        """
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute(
             'SELECT nickname, best_score FROM players WHERE best_score > 0 ORDER BY best_score DESC LIMIT ?',
             (limit,)
         )
         results = cursor.fetchall()
-        
+
         conn.close()
-        
+
         return results
-    
+
     def player_exists(self, nickname: str) -> bool:
-        """Проверить существует ли игрок."""
+        """
+        Проверить существование игрока.
+
+        Args:
+            nickname: Никнейм.
+
+        Returns:
+            True если существует.
+        """
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('SELECT id FROM players WHERE nickname = ?', (nickname,))
         result = cursor.fetchone()
-        
+
         conn.close()
-        
+
         return result is not None
 
 
 # Глобальный экземпляр базы данных
 db = Database()
-

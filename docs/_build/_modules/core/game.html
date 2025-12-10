@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.game &mdash; Asteroids Game 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Asteroids Game
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Введение</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">Руководство пользователя</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Документация</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Asteroids Game</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">core.game</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for core.game</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Класс игры, управляющий основным циклом, состояниями и ресурсами.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygame</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">WINDOW_SIZE</span><span class="p">,</span> <span class="n">FPS</span><span class="p">,</span> <span class="n">BG_COLOR</span><span class="p">,</span> <span class="n">TEXT_COLOR</span><span class="p">,</span> <span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.game_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">GameObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.input</span><span class="w"> </span><span class="kn">import</span> <span class="n">Input</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.states</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseState</span><span class="p">,</span>
+    <span class="n">GameStateId</span><span class="p">,</span>
+    <span class="n">PlayingState</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.ui_states</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NicknameState</span><span class="p">,</span>
+    <span class="n">MenuState</span><span class="p">,</span>
+    <span class="n">GameOverState</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Game">
+<a class="viewcode-back" href="../../api.html#core.game.Game">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Game</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Главный класс игры. Управляет состояниями, основным циклом и ресурсами.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Game.__init__">
+<a class="viewcode-back" href="../../api.html#core.game.Game.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">WINDOW_SIZE</span><span class="p">,</span>
+            <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FPS</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Инициализировать игру.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            size: Размер окна.</span>
+<span class="sd">            fps: Целевое количество кадров в секунду.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fps</span> <span class="o">=</span> <span class="n">fps</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">screen</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">set_mode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">set_caption</span><span class="p">(</span><span class="s2">&quot;Asteroids&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">Clock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">SysFont</span><span class="p">(</span><span class="n">FONT_NAME</span><span class="p">,</span> <span class="n">FONT_SIZE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bg_color</span> <span class="o">=</span> <span class="n">BG_COLOR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_color</span> <span class="o">=</span> <span class="n">TEXT_COLOR</span>
+
+        <span class="c1"># Менеджер ввода</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="n">Input</span><span class="p">()</span>
+
+        <span class="c1"># Менеджер игровых объектов</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GameObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GameObject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Последний счёт (для GameOver)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_score</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># FSM: словарь состояний + текущее состояние</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">GameStateId</span><span class="p">,</span> <span class="n">BaseState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="p">:</span> <span class="n">BaseState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_states</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Game initialized with size&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="s2">&quot;and FPS&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fps</span><span class="p">)</span></div>
+
+
+    <span class="c1"># --- управление состояниями ---</span>
+
+<div class="viewcode-block" id="Game._init_states">
+<a class="viewcode-back" href="../../api.html#core.game.Game._init_states">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Инициализировать все состояния игры.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_states</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">GameStateId</span><span class="o">.</span><span class="n">NICKNAME</span><span class="p">:</span> <span class="n">NicknameState</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">GameStateId</span><span class="o">.</span><span class="n">MENU</span><span class="p">:</span> <span class="n">MenuState</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">GameStateId</span><span class="o">.</span><span class="n">PLAYING</span><span class="p">:</span> <span class="n">PlayingState</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">GameStateId</span><span class="o">.</span><span class="n">GAME_OVER</span><span class="p">:</span> <span class="n">GameOverState</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">change_state</span><span class="p">(</span><span class="n">GameStateId</span><span class="o">.</span><span class="n">NICKNAME</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Game.change_state">
+<a class="viewcode-back" href="../../api.html#core.game.Game.change_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_id</span><span class="p">:</span> <span class="n">GameStateId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Переключить состояние игры.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state_id: Идентификатор нового состояния.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">[</span><span class="n">state_id</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="o">.</span><span class="n">enter</span><span class="p">()</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Change state to&quot;</span><span class="p">,</span> <span class="n">state_id</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+    <span class="c1"># --- менеджер объектов ---</span>
+
+<div class="viewcode-block" id="Game.add_object">
+<a class="viewcode-back" href="../../api.html#core.game.Game.add_object">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">GameObject</span><span class="p">,</span> <span class="n">ui</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Добавить объект в менеджер.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj: Игровой объект.</span>
+<span class="sd">            ui: Если True, добавляется в UI-объекты.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ui</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Game.clear_objects">
+<a class="viewcode-back" href="../../api.html#core.game.Game.clear_objects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Очистить все объекты.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Game.update_objects">
+<a class="viewcode-back" href="../../api.html#core.game.Game.update_objects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить все объекты.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()]</span>
+
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()]</span></div>
+
+
+<div class="viewcode-block" id="Game.draw_objects">
+<a class="viewcode-back" href="../../api.html#core.game.Game.draw_objects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать все объекты.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_objects</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui_objects</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen</span><span class="p">)</span></div>
+
+
+    <span class="c1"># --- основной цикл ---</span>
+
+<div class="viewcode-block" id="Game.run">
+<a class="viewcode-back" href="../../api.html#core.game.Game.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Запустить основной игровой цикл.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Game loop started&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">begin_frame</span><span class="p">()</span>
+
+            <span class="n">dt_ms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">tick</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fps</span><span class="p">)</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">dt_ms</span> <span class="o">/</span> <span class="mf">1000.0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_events</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">()</span>
+
+            <span class="n">pygame</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">flip</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Game loop stopped&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Game.stop">
+<a class="viewcode-back" href="../../api.html#core.game.Game.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Остановить игру.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="c1"># --- внутренние шаги цикла ---</span>
+
+<div class="viewcode-block" id="Game._handle_events">
+<a class="viewcode-back" href="../../api.html#core.game.Game._handle_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_events</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Обработать события.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pygame</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">QUIT</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">return</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">handle_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="o">.</span><span class="n">handle_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Game._update">
+<a class="viewcode-back" href="../../api.html#core.game.Game._update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обновить логику игры.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Дельта времени.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Game._draw">
+<a class="viewcode-back" href="../../api.html#core.game.Game._draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать кадр.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_state</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_draw_debug_overlay</span><span class="p">()</span></div>
+
+
+    <span class="c1"># --- отладочный overlay ---</span>
+
+<div class="viewcode-block" id="Game._draw_debug_overlay">
+<a class="viewcode-back" href="../../api.html#core.game.Game._draw_debug_overlay">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_debug_overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Отрисовать отладочную информацию (FPS, кол-во объектов и т.д.).&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fps_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">get_fps</span><span class="p">()</span>
+            <span class="n">fps_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;FPS: </span><span class="si">{</span><span class="n">fps_value</span><span class="si">:</span><span class="s2">5.1f</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Используем яркий цвет для лучшей видимости</span>
+            <span class="k">if</span> <span class="n">fps_value</span> <span class="o">&gt;=</span> <span class="mi">50</span><span class="p">:</span>
+                <span class="n">fps_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;lime&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fps_value</span> <span class="o">&gt;=</span> <span class="mi">30</span><span class="p">:</span>
+                <span class="n">fps_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;yellow&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fps_color</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Рендерим текст (используем тот же шрифт, что и в игре)</span>
+            <span class="n">fps_surf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">fps_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fps_color</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">fps_surf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Если шрифт не работает, используем дефолтный</span>
+                <span class="n">default_font</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span>
+                <span class="n">fps_surf</span> <span class="o">=</span> <span class="n">default_font</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">fps_text</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fps_color</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">fps_surf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Размещаем в правом верхнем углу (под уровнем)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">fps_surf</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">-</span> <span class="mi">10</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="mi">80</span>  <span class="c1"># Под UI элементами (Score, Lives находятся на 10 и 40)</span>
+
+            <span class="c1"># Рисуем полупрозрачный фон для лучшей читаемости</span>
+            <span class="n">bg_rect</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">fps_surf</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="n">fps_surf</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">bg_surface</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">Surface</span><span class="p">((</span><span class="n">bg_rect</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">bg_rect</span><span class="o">.</span><span class="n">height</span><span class="p">),</span> <span class="n">pygame</span><span class="o">.</span><span class="n">SRCALPHA</span><span class="p">)</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rect</span><span class="p">(</span><span class="n">bg_surface</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bg_rect</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">bg_rect</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">bg_surface</span><span class="p">,</span> <span class="n">bg_rect</span><span class="p">)</span>
+
+            <span class="c1"># Рисуем FPS поверх фона</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">screen</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">fps_surf</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Если что-то пошло не так, просто игнорируем</span>
+            <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, PROJECTX.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,3 +1,5 @@
+"""Состояния игры (FSM)."""
+
 from __future__ import annotations
 
 import math
@@ -24,6 +26,7 @@ if TYPE_CHECKING:
 
 
 class GameStateId(Enum):
+    NICKNAME = auto()  # Ввод никнейма (стартовый экран)
     MENU = auto()
     PLAYING = auto()
     GAME_OVER = auto()
@@ -38,7 +41,7 @@ class BaseState(ABC):
     @property
     @abstractmethod
     def id(self) -> GameStateId:
-        """Идентификатор состояния (для переключения)."""
+        """Уникальный идентификатор состояния."""
         raise NotImplementedError
 
     def enter(self) -> None:
@@ -50,49 +53,37 @@ class BaseState(ABC):
         pass
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        """Обработка одного события pygame."""
+        """
+        Обработать событие.
+
+        Args:
+            event: Событие pygame.
+        """
         pass
 
     @abstractmethod
     def update(self, dt: float) -> None:
-        """Обновление логики состояния."""
+        """
+        Обновить логику состояния.
+
+        Args:
+            dt: Дельта времени.
+        """
         pass
 
     @abstractmethod
     def draw(self) -> None:
-        """Отрисовка состояния."""
+        """Отрисовать состояние."""
         pass
 
 
-class MenuState(BaseState):
-    @property
-    def id(self) -> GameStateId:
-        return GameStateId.MENU
-
-    def handle_event(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                self.game.change_state(GameStateId.PLAYING)
-            elif event.key == pygame.K_ESCAPE:
-                self.game.stop()
-
-    def update(self, dt: float) -> None:
-        pass
-
-    def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
-
-        font = self.game.font
-        title = font.render("ASTEROIDS (MENU)", True, self.game.text_color)
-        hint = font.render("Enter - start, Esc - exit", True, self.game.text_color)
-
-        w, h = self.game.size
-        screen.blit(title, (w // 2 - title.get_width() // 2, h // 3))
-        screen.blit(hint, (w // 2 - hint.get_width() // 2, h // 3 + 30))
+# Импортируем UI-состояния из отдельного файла
+from .ui_states import NicknameState, MenuState, GameOverState
 
 
 class PlayingState(BaseState):
+    """Состояние активной игры."""
+
     def __init__(self, game: Game) -> None:
         super().__init__(game)
         self.player: Optional[Player] = None
@@ -194,6 +185,12 @@ class PlayingState(BaseState):
         self.game.clear_objects()
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        """
+        Обработать событие.
+
+        Args:
+            event: Событие pygame.
+        """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 # Пауза или выход в меню
@@ -210,6 +207,12 @@ class PlayingState(BaseState):
                     )
 
     def update(self, dt: float) -> None:
+        """
+        Обновить состояние игры.
+
+        Args:
+            dt: Дельта времени.
+        """
         # Обновляем игрока (обработка ввода)
         if self.player is not None and self.player.is_alive():
             self.player.handle_input(self.game.input, dt)
@@ -400,85 +403,32 @@ class PlayingState(BaseState):
                     speed=300.0,
                     lifetime=0.8
                 )
-            # Переходим в Game Over
+            self.game.last_score = self.score
             self.game.change_state(GameStateId.GAME_OVER)
 
     def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
+        """Отрисовать состояние."""
+        self.game.screen.fill(self.game.bg_color)
 
-        # Рисуем фоновые звёзды (параллакс)
         if self.star_field is not None:
-            self.star_field.draw(screen)
+            self.star_field.draw(self.game.screen)
 
-        # Рисуем игровые объекты (включая игрока)
         self.game.draw_objects()
 
-        # Рисуем эффекты частиц (взрывы)
         if self.particle_system is not None:
-            self.particle_system.draw(screen)
+            self.particle_system.draw(self.game.screen)
 
-        # Рисуем UI (счёт, жизни, уровень)
         if self.ui_manager is not None:
-            self.ui_manager.draw(screen)
-
-        # Отображаем подсказки управления
-        self._draw_controls_hint()
+            self.ui_manager.draw(self.game.screen)
 
     def _destroy_asteroid(self, asteroid: Asteroid) -> None:
-        """Удалить астероид и добавить его осколки в игру."""
-        if not asteroid.is_alive():
-            return
-        asteroid.kill()
+        """
+        Уничтожить астероид и создать осколки.
+
+        Args:
+            asteroid: Астероид для уничтожения.
+        """
         fragments = asteroid.split()
-        for child in fragments:
-            self.game.add_object(child)
-
-    def _draw_controls_hint(self) -> None:
-        """Отрисовка подсказок по управлению."""
-        font = pygame.font.Font(None, 24)
-        hints = [
-            "Controls:",
-            "Arrow Keys / WASD - Move & Rotate",
-            "Space - Shoot",
-            "Shift - Hyperspace",
-            "ESC - Menu"
-        ]
-
-        x, y = self.game.size[0] - 300, self.game.size[1] - 150
-        for hint in hints:
-            text_surf = font.render(hint, True, pygame.Color("gray"))
-            self.game.screen.blit(text_surf, (x, y))
-            y += 25
-
-
-class GameOverState(BaseState):
-    @property
-    def id(self) -> GameStateId:
-        return GameStateId.GAME_OVER
-
-    def handle_event(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
-                self.game.change_state(GameStateId.PLAYING)
-            elif event.key == pygame.K_ESCAPE:
-                self.game.change_state(GameStateId.MENU)
-
-    def update(self, dt: float) -> None:
-        pass
-
-    def draw(self) -> None:
-        screen = self.game.screen
-        screen.fill(self.game.bg_color)
-
-        font = self.game.font
-        title_font = pygame.font.SysFont(FONT_NAME, FONT_SIZE * 2)
-
-        title = title_font.render("GAME OVER", True, pygame.Color("red"))
-        hint1 = font.render("R - restart", True, self.game.text_color)
-        hint2 = font.render("Esc - menu", True, self.game.text_color)
-
-        w, h = self.game.size
-        screen.blit(title, (w // 2 - title.get_width() // 2, h // 3))
-        screen.blit(hint1, (w // 2 - hint1.get_width() // 2, h // 3 + 80))
-        screen.blit(hint2, (w // 2 - hint2.get_width() // 2, h // 3 + 110))
+        for fragment in fragments:
+            self.game.add_object(fragment)
+        asteroid.kill()

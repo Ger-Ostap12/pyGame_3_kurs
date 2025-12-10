@@ -1,4 +1,4 @@
-"""Класс пули врагов."""
+"""Пули, выпускаемые летающими тарелками."""
 
 from __future__ import annotations
 
@@ -8,63 +8,88 @@ from core.game_object import GameObject, Vector2
 
 
 class EnemyBullet(GameObject):
-    """Класс пули врага (для маленьких тарелок)."""
+    """
+    Обычная пуля маленькой тарелки.
 
-    SPEED = 250.0  # Скорость пули в пикселях/сек
-    LIFETIME = 2.0  # Время жизни пули в секундах
-    RADIUS = 2.0
+    Быстрая, точная, красная. Даёт ощущение опасности.
+    """
 
-    def __init__(self, position: Vector2, direction: Vector2):
+    SPEED: float = 280.0          # пикселей в секунду
+    LIFETIME: float = 2.5         # секунды
+    RADIUS: float = 3.0           # радиус коллизии
+
+    def __init__(self, position: Vector2, direction: Vector2) -> None:
+        """
+        Создать пулю врага.
+
+        Args:
+            position: Точка вылета пули (обычно центр тарелки).
+            direction: Нормализованный вектор направления к игроку.
+        """
         super().__init__(
             position=Vector2(position),
             velocity=direction * self.SPEED,
-            radius=self.RADIUS
+            radius=self.RADIUS,
         )
-        self.lifetime = self.LIFETIME
+        self.age = 0.0
 
     def update(self, dt: float) -> None:
+        """
+        Обновить положение и время жизни пули.
+
+        Args:
+            dt: Дельта времени в секундах.
+        """
         super().update(dt)
-        self.lifetime -= dt
-        if self.lifetime <= 0:
+        self.age += dt
+        if self.age >= self.LIFETIME:
             self.kill()
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Рисуем пулю как красный круг."""
-        pygame.draw.circle(
-            surface,
-            pygame.Color("red"),
-            (int(self.position.x), int(self.position.y)),
-            int(self.RADIUS)
-        )
+        """
+        Отрисовать пулю как яркий красный кружок с белой обводкой.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
+        center = (int(self.position.x), int(self.position.y))
+        pygame.draw.circle(surface, pygame.Color("red"), center, int(self.RADIUS))
+        pygame.draw.circle(surface, pygame.Color("white"), center, int(self.RADIUS), 1)
 
 
-class LargeEnemyBullet(GameObject):
-    """Класс большой пули врага (для больших тарелок)."""
+class LargeEnemyBullet(EnemyBullet):
+    """
+    Большая и медленная пуля большой тарелки.
 
-    SPEED = 250.0  # Скорость пули в пикселях/сек
-    LIFETIME = 2.0  # Время жизни пули в секундах
-    RADIUS = 5.0  # Больший радиус для больших пуль
+    Визуально отличается, легче заметить и увернуться.
+    """
 
-    def __init__(self, position: Vector2, direction: Vector2):
-        super().__init__(
-            position=Vector2(position),
-            velocity=direction * self.SPEED,
-            radius=self.RADIUS
-        )
-        self.lifetime = self.LIFETIME
-
-    def update(self, dt: float) -> None:
-        super().update(dt)
-        self.lifetime -= dt
-        if self.lifetime <= 0:
-            self.kill()
+    SPEED: float = 180.0          # медленнее, чем у маленькой тарелки
+    LIFETIME: float = 3.5         # живёт дольше
+    RADIUS: float = 6.0           # крупнее
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Рисуем большую пулю как красный круг."""
-        pygame.draw.circle(
-            surface,
-            pygame.Color("red"),
-            (int(self.position.x), int(self.position.y)),
-            int(self.RADIUS)
-        )
+        """
+        Отрисовать большую пулю — оранжевый круг с пульсирующим свечением.
 
+        Args:
+            surface: Поверхность для отрисовки.
+        """
+        center = (int(self.position.x), int(self.position.y))
+
+        # Основное тело
+        pygame.draw.circle(surface, pygame.Color("orange"), center, int(self.RADIUS))
+
+        # Внешнее свечение (пульсирует)
+        alpha = int(100 + 155 * abs((pygame.time.get_ticks() % 1000) / 1000 - 0.5) * 2)
+        glow_surface = pygame.Surface((int(self.RADIUS * 4), int(self.RADIUS * 4)), pygame.SRCALPHA)
+        pygame.draw.circle(
+            glow_surface,
+            pygame.Color(255, 140, 0, alpha),
+            (int(self.RADIUS * 2), int(self.RADIUS * 2)),
+            int(self.RADIUS * 2)
+        )
+        surface.blit(glow_surface, glow_surface.get_rect(center=center))
+
+        # Белая обводка
+        pygame.draw.circle(surface, pygame.Color("white"), center, int(self.RADIUS), 2)

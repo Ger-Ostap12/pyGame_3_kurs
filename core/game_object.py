@@ -1,3 +1,5 @@
+"""Базовый класс для игровых объектов."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,6 +12,8 @@ Vector2 = pygame.math.Vector2
 
 @dataclass
 class GameObject:
+    """Базовый класс для всех игровых объектов (корабль, астероиды, пули и т.д.)."""
+
     position: Vector2
     velocity: Vector2 = field(default_factory=Vector2)
     rotation: float = 0.0  # градусы
@@ -20,11 +24,21 @@ class GameObject:
     mask: Optional[pygame.Mask] = None
 
     def update(self, dt: float) -> None:
-        """Обновить положение с учётом скорости."""
+        """
+        Обновить положение объекта.
+
+        Args:
+            dt: Дельта времени.
+        """
         self.position += self.velocity * dt
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Базовая отрисовка: если есть спрайт — рисуем его, иначе кружок."""
+        """
+        Отрисовать объект.
+
+        Args:
+            surface: Поверхность для отрисовки.
+        """
         if self.sprite is not None:
             rect = self.sprite.get_rect(center=self.position)
             surface.blit(self.sprite, rect)
@@ -34,7 +48,7 @@ class GameObject:
                 pygame.draw.circle(surface, pygame.Color("white"), self.position, self.radius, 1)
 
     def get_rect(self) -> pygame.Rect:
-        """Rect для коллизий. По умолчанию берётся из спрайта или из радиуса."""
+        """Вернуть прямоугольник для коллизий."""
         if self.sprite is not None:
             return self.sprite.get_rect(center=self.position)
 
@@ -47,7 +61,7 @@ class GameObject:
         )
 
     def get_mask(self) -> Optional[pygame.Mask]:
-        """Маска для пиксельных коллизий (если есть спрайт)."""
+        """Вернуть маску для пиксельных коллизий."""
         if self.mask is not None:
             return self.mask
         if self.sprite is not None:
@@ -56,7 +70,12 @@ class GameObject:
         return None
 
     def wrap_around_screen(self, size: Tuple[int, int]) -> None:
-        """Перебросить объект на противоположную сторону, если он вышел за экран."""
+        """
+        Перенести объект на противоположную сторону экрана.
+
+        Args:
+            size: Размер экрана.
+        """
         width, height = size
         x, y = self.position.x, self.position.y
 
@@ -73,12 +92,18 @@ class GameObject:
         self.position.update(x, y)
 
     def rotate(self, angle_delta: float) -> None:
-        """Повернуть объект на заданный угол (в градусах)."""
+        """
+        Повернуть объект.
+
+        Args:
+            angle_delta: Угол поворота в градусах.
+        """
         self.rotation = (self.rotation + angle_delta) % 360
 
     def kill(self) -> None:
-        """Пометить объект как «мертвый»."""
+        """Пометить объект как мёртвый."""
         self.alive = False
 
     def is_alive(self) -> bool:
+        """Проверить, жив ли объект."""
         return self.alive
